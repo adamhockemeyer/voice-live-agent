@@ -1,0 +1,28 @@
+# Azure Developer CLI configuration
+name: voice-live-agent
+metadata:
+  template: voice-live-agent@0.0.1
+
+services:
+  api:
+    project: ./src/api-python
+    language: py
+    host: containerapp
+
+  ui:
+    project: ./src/ui
+    language: ts
+    host: containerapp
+
+infra:
+  provider: bicep
+  path: ./infra
+
+hooks:
+  postprovision:
+    windows:
+      shell: pwsh
+      run: ./hooks/postprovision.ps1
+    posix:
+      shell: sh
+      run: ./hooks/postprovision.sh

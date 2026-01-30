@@ -1,0 +1,84 @@
+2026-01-30 14:50:40,339:main:INFO:Starting Voice Live Agent Server
+2026-01-30 14:50:40,350:main:INFO:VoiceLive Endpoint: https://ai-vla-py-2576.cognitiveservices.azure.com/
+2026-01-30 14:50:40,363:main:INFO:ACS Endpoint: https://acs-vla-py-2576.communication.azure.com
+2026-01-30 14:51:26,375:azure.identity.aio._credentials.environment:INFO:No environment configuration found.
+2026-01-30 14:51:26,400:azure.identity.aio._credentials.managed_identity:INFO:ManagedIdentityCredential will use IMDS
+2026-01-30 14:51:26,406:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=REDACTED&resource=REDACTED'
+Request method: 'GET'
+Request headers:
+    'User-Agent': 'azsdk-python-identity/1.25.1 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+No body was attached to the request
+2026-01-30 14:51:26,474:azure.identity.aio._credentials.chained:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-01-30 14:51:26,475:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'https://acs-vla-py-2576.communication.azure.com/calling/callConnections?api-version=REDACTED'
+Request method: 'POST'
+Request headers:
+    'Content-Type': 'application/json'
+    'Content-Length': '386'
+    'Repeatability-First-Sent': 'REDACTED'
+    'Repeatability-Request-ID': 'REDACTED'
+    'Accept': 'application/json'
+    'x-ms-client-request-id': '0ff6507b-fe15-11f0-9227-e02e0b0dc55e'
+    'User-Agent': 'azsdk-python-communication-callautomation/1.5.0 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+    'Authorization': 'REDACTED'
+A body is sent with the request
+2026-01-30 14:51:26,966:azure.core.pipeline.policies.http_logging_policy:INFO:Response status: 201
+Response headers:
+    'Date': 'Fri, 30 Jan 2026 19:51:25 GMT'
+    'Content-Type': 'application/json; charset=utf-8'
+    'Transfer-Encoding': 'chunked'
+    'Connection': 'keep-alive'
+    'MS-CV': 'REDACTED'
+    'X-Microsoft-Skype-Client': 'REDACTED'
+    'X-Ms-Client-Version': 'REDACTED'
+    'api-supported-versions': 'REDACTED'
+    'x-ms-client-request-id': '0ff6507b-fe15-11f0-9227-e02e0b0dc55e'
+    'X-Microsoft-Skype-Chain-ID': 'REDACTED'
+    'x-azure-ref': 'REDACTED'
+    'Strict-Transport-Security': 'REDACTED'
+    'X-Cache': 'REDACTED'
+2026-01-30 14:51:26,971:main:INFO:Outbound call initiated: 0f005780-e9c3-4321-8230-867993117e11 to 12604146481
+2026-01-30 14:51:26,974:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000002113AD7D400>
+2026-01-30 14:51:26,974:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000002113ADB0050>
+2026-01-30 14:51:26,975:asyncio:ERROR:Unclosed connector
+connections: ['deque([(<aiohttp.client_proto.ResponseHandler object at 0x000002113AD523F0>, 303898.5398899)])']
+connector: <aiohttp.connector.TCPConnector object at 0x000002113ADB0190>
+2026-01-30 14:51:51,681:azure.identity.aio._credentials.environment:INFO:No environment configuration found.
+2026-01-30 14:51:51,688:azure.identity.aio._credentials.managed_identity:INFO:ManagedIdentityCredential will use IMDS
+2026-01-30 14:51:51,701:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=REDACTED&resource=REDACTED'
+Request method: 'GET'
+Request headers:
+    'User-Agent': 'azsdk-python-identity/1.25.1 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+No body was attached to the request
+2026-01-30 14:51:51,803:azure.identity.aio._credentials.chained:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-01-30 14:51:51,810:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'https://acs-vla-py-2576.communication.azure.com/calling/callConnections/0f005780-e9c3-4321-8230-867993117e11:terminate?api-version=REDACTED'
+Request method: 'POST'
+Request headers:
+    'Repeatability-First-Sent': 'REDACTED'
+    'Repeatability-Request-ID': 'REDACTED'
+    'Accept': 'application/json'
+    'x-ms-client-request-id': '1f09f9c0-fe15-11f0-a134-e02e0b0dc55e'
+    'User-Agent': 'azsdk-python-communication-callautomation/1.5.0 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+    'Authorization': 'REDACTED'
+No body was attached to the request
+2026-01-30 14:51:52,431:azure.core.pipeline.policies.http_logging_policy:INFO:Response status: 204
+Response headers:
+    'Date': 'Fri, 30 Jan 2026 19:51:51 GMT'
+    'Connection': 'keep-alive'
+    'MS-CV': 'REDACTED'
+    'Repeatability-Result': 'REDACTED'
+    'X-Microsoft-Skype-Client': 'REDACTED'
+    'X-Ms-Client-Version': 'REDACTED'
+    'api-supported-versions': 'REDACTED'
+    'x-ms-client-request-id': '1f09f9c0-fe15-11f0-a134-e02e0b0dc55e'
+    'X-Microsoft-Skype-Chain-ID': 'REDACTED'
+    'x-azure-ref': 'REDACTED'
+    'Strict-Transport-Security': 'REDACTED'
+    'X-Cache': 'REDACTED'
+2026-01-30 14:51:52,433:main:INFO:Hung up call: 0f005780-e9c3-4321-8230-867993117e11
+2026-01-30 14:58:57,148:main:INFO:Shutting down - cleaning up active calls
+2026-01-30 14:58:57,205:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000002113ADB02D0>
+2026-01-30 14:58:57,207:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000002113ADB1310>

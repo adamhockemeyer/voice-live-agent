@@ -1,0 +1,84 @@
+2026-01-30 14:36:07,190:main:INFO:Starting Voice Live Agent Server
+2026-01-30 14:36:07,196:main:INFO:VoiceLive Endpoint: https://ai-vla-py-2576.cognitiveservices.azure.com/
+2026-01-30 14:36:07,204:main:INFO:ACS Endpoint: https://acs-vla-py-2576.communication.azure.com
+2026-01-30 14:41:41,026:azure.identity.aio._credentials.environment:INFO:No environment configuration found.
+2026-01-30 14:41:41,058:azure.identity.aio._credentials.managed_identity:INFO:ManagedIdentityCredential will use IMDS
+2026-01-30 14:41:41,065:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=REDACTED&resource=REDACTED'
+Request method: 'GET'
+Request headers:
+    'User-Agent': 'azsdk-python-identity/1.25.1 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+No body was attached to the request
+2026-01-30 14:41:41,183:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'https://login.microsoftonline.com/organizations/oauth2/v2.0/token'
+Request method: 'POST'
+Request headers:
+    'Content-Type': 'application/x-www-form-urlencoded'
+    'User-Agent': 'azsdk-python-identity/1.25.1 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+A body is sent with the request
+2026-01-30 14:41:41,688:azure.core.pipeline.policies.http_logging_policy:INFO:Response status: 200
+Response headers:
+    'Date': 'Fri, 30 Jan 2026 19:41:40 GMT'
+    'Content-Type': 'application/json; charset=utf-8'
+    'Content-Length': '5791'
+    'Connection': 'keep-alive'
+    'Cache-Control': 'no-store, no-cache'
+    'Pragma': 'no-cache'
+    'Expires': '-1'
+    'Strict-Transport-Security': 'REDACTED'
+    'X-Content-Type-Options': 'REDACTED'
+    'P3P': 'REDACTED'
+    'x-ms-request-id': 'df67e497-d592-4842-8489-7bc2d56d6000'
+    'x-ms-ests-server': 'REDACTED'
+    'x-ms-srs': 'REDACTED'
+    'Content-Security-Policy-Report-Only': 'REDACTED'
+    'X-XSS-Protection': 'REDACTED'
+    'Set-Cookie': 'REDACTED'
+    'Set-Cookie': 'REDACTED'
+    'Set-Cookie': 'REDACTED'
+    'X-Cache': 'REDACTED'
+2026-01-30 14:41:41,734:azure.identity.aio._credentials.chained:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-01-30 14:41:41,741:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'https://acs-vla-py-2576.communication.azure.com/calling/callConnections?api-version=REDACTED'
+Request method: 'POST'
+Request headers:
+    'Content-Type': 'application/json'
+    'Content-Length': '460'
+    'Repeatability-First-Sent': 'REDACTED'
+    'Repeatability-Request-ID': 'REDACTED'
+    'Accept': 'application/json'
+    'x-ms-client-request-id': 'b312528f-fe13-11f0-a054-e02e0b0dc55e'
+    'User-Agent': 'azsdk-python-communication-callautomation/1.5.0 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+    'Authorization': 'REDACTED'
+A body is sent with the request
+2026-01-30 14:41:42,707:azure.core.pipeline.policies.http_logging_policy:INFO:Response status: 201
+Response headers:
+    'Date': 'Fri, 30 Jan 2026 19:41:41 GMT'
+    'Content-Type': 'application/json; charset=utf-8'
+    'Transfer-Encoding': 'chunked'
+    'Connection': 'keep-alive'
+    'MS-CV': 'REDACTED'
+    'X-Microsoft-Skype-Client': 'REDACTED'
+    'X-Ms-Client-Version': 'REDACTED'
+    'api-supported-versions': 'REDACTED'
+    'x-ms-client-request-id': 'b312528f-fe13-11f0-a054-e02e0b0dc55e'
+    'X-Microsoft-Skype-Chain-ID': 'REDACTED'
+    'x-azure-ref': 'REDACTED'
+    'Strict-Transport-Security': 'REDACTED'
+    'X-Cache': 'REDACTED'
+2026-01-30 14:41:42,709:main:ERROR:Failed to make outbound call
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\main.py", line 187, in make_outbound_call
+    call_connection_id = result.call_connection_properties.call_connection_id
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'CallConnectionProperties' object has no attribute 'call_connection_properties'. Did you mean: 'call_connection_state'?
+2026-01-30 14:41:42,720:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x00000123A7654410>
+2026-01-30 14:41:42,724:asyncio:ERROR:Unclosed connector
+connections: ['deque([(<aiohttp.client_proto.ResponseHandler object at 0x00000123A75F27B0>, 303313.2730416)])']
+connector: <aiohttp.connector.TCPConnector object at 0x00000123A7654550>
+2026-01-30 14:41:42,725:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x00000123A761D400>
+2026-01-30 14:41:42,726:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x00000123A75BE5D0>
+2026-01-30 14:41:42,728:asyncio:ERROR:Unclosed connector
+connections: ['deque([(<aiohttp.client_proto.ResponseHandler object at 0x00000123A76605F0>, 303314.2770573)])']
+connector: <aiohttp.connector.TCPConnector object at 0x00000123A7654050>
+2026-01-30 14:45:07,938:main:INFO:Shutting down - cleaning up active calls

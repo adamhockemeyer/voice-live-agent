@@ -1,0 +1,135 @@
+2026-01-30 15:15:24,583:main:INFO:Starting Voice Live Agent Server
+2026-01-30 15:15:24,584:main:INFO:VoiceLive Endpoint: https://ai-vla-py-2576.cognitiveservices.azure.com/
+2026-01-30 15:15:24,585:main:INFO:ACS Endpoint: https://acs-vla-py-2576.communication.azure.com
+2026-01-30 15:15:38,534:azure.identity.aio._credentials.environment:INFO:No environment configuration found.
+2026-01-30 15:15:38,571:azure.identity.aio._credentials.managed_identity:INFO:ManagedIdentityCredential will use IMDS
+2026-01-30 15:15:38,584:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=REDACTED&resource=REDACTED'
+Request method: 'GET'
+Request headers:
+    'User-Agent': 'azsdk-python-identity/1.25.1 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+No body was attached to the request
+2026-01-30 15:15:38,701:azure.identity.aio._credentials.chained:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-01-30 15:15:38,708:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'https://acs-vla-py-2576.communication.azure.com/calling/callConnections?api-version=REDACTED'
+Request method: 'POST'
+Request headers:
+    'Content-Type': 'application/json'
+    'Content-Length': '416'
+    'Repeatability-First-Sent': 'REDACTED'
+    'Repeatability-Request-ID': 'REDACTED'
+    'Accept': 'application/json'
+    'x-ms-client-request-id': '71870b7f-fe18-11f0-bfe7-e02e0b0dc55e'
+    'User-Agent': 'azsdk-python-communication-callautomation/1.5.0 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+    'Authorization': 'REDACTED'
+A body is sent with the request
+2026-01-30 15:15:39,198:azure.core.pipeline.policies.http_logging_policy:INFO:Response status: 201
+Response headers:
+    'Date': 'Fri, 30 Jan 2026 20:15:38 GMT'
+    'Content-Type': 'application/json; charset=utf-8'
+    'Transfer-Encoding': 'chunked'
+    'Connection': 'keep-alive'
+    'MS-CV': 'REDACTED'
+    'X-Microsoft-Skype-Client': 'REDACTED'
+    'X-Ms-Client-Version': 'REDACTED'
+    'api-supported-versions': 'REDACTED'
+    'x-ms-client-request-id': '71870b7f-fe18-11f0-bfe7-e02e0b0dc55e'
+    'X-Microsoft-Skype-Chain-ID': 'REDACTED'
+    'x-azure-ref': 'REDACTED'
+    'Strict-Transport-Security': 'REDACTED'
+    'X-Cache': 'REDACTED'
+2026-01-30 15:15:39,203:main:INFO:Outbound call initiated: 20005680-3d3a-4eea-95a9-3fa4dbec5a13 to 12604146481
+2026-01-30 15:15:39,204:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001E18322D400>
+2026-01-30 15:15:39,204:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001E183248190>
+2026-01-30 15:15:39,205:asyncio:ERROR:Unclosed connector
+connections: ['deque([(<aiohttp.client_proto.ResponseHandler object at 0x000001E183258B90>, 305350.7733141)])']
+connector: <aiohttp.connector.TCPConnector object at 0x000001E1832482D0>
+2026-01-30 15:15:49,613:main:INFO:Call event: Microsoft.Communication.CallConnected for 20005680-3d3a-4eea-95a9-3fa4dbec5a13
+2026-01-30 15:15:49,613:main:INFO:Call connected: 20005680-3d3a-4eea-95a9-3fa4dbec5a13
+2026-01-30 15:15:49,614:azure.identity.aio._credentials.environment:INFO:No environment configuration found.
+2026-01-30 15:15:49,615:azure.identity.aio._credentials.managed_identity:INFO:ManagedIdentityCredential will use IMDS
+2026-01-30 15:15:49,618:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=REDACTED&resource=REDACTED'
+Request method: 'GET'
+Request headers:
+    'User-Agent': 'azsdk-python-identity/1.25.1 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+No body was attached to the request
+2026-01-30 15:15:49,620:main:INFO:Call event: Microsoft.Communication.ParticipantsUpdated for 20005680-3d3a-4eea-95a9-3fa4dbec5a13
+2026-01-30 15:15:49,655:azure.identity.aio._credentials.chained:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-01-30 15:15:49,656:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'https://acs-vla-py-2576.communication.azure.com/calling/callConnections/20005680-3d3a-4eea-95a9-3fa4dbec5a13:startMediaStreaming?api-version=REDACTED'
+Request method: 'POST'
+Request headers:
+    'Content-Type': 'application/json'
+    'Content-Length': '2'
+    'Accept': 'application/json'
+    'x-ms-client-request-id': '781ac22a-fe18-11f0-a797-e02e0b0dc55e'
+    'User-Agent': 'azsdk-python-communication-callautomation/1.5.0 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+    'Authorization': 'REDACTED'
+A body is sent with the request
+2026-01-30 15:15:50,469:main:INFO:Media WebSocket connected (waiting for metadata)
+2026-01-30 15:15:50,547:main:INFO:AudioMetadata message: {'kind': 'AudioMetadata', 'audioMetadata': {'subscriptionId': '9b085580-87de-42d6-ae7f-b88a7cb14204', 'encoding': 'PCM', 'sampleRate': 16000, 'channels': 1, 'length': 640}}
+2026-01-30 15:15:50,548:main:INFO:Using active call_id: 20005680-3d3a-4eea-95a9-3fa4dbec5a13, subscription: 9b085580-87de-42d6-ae7f-b88a7cb14204
+2026-01-30 15:15:50,570:azure.core.pipeline.policies.http_logging_policy:INFO:Response status: 202
+Response headers:
+    'Date': 'Fri, 30 Jan 2026 20:15:49 GMT'
+    'Content-Length': '0'
+    'Connection': 'keep-alive'
+    'MS-CV': 'REDACTED'
+    'X-Microsoft-Skype-Client': 'REDACTED'
+    'X-Ms-Client-Version': 'REDACTED'
+    'api-supported-versions': 'REDACTED'
+    'x-ms-client-request-id': '781ac22a-fe18-11f0-a797-e02e0b0dc55e'
+    'X-Microsoft-Skype-Chain-ID': 'REDACTED'
+    'x-azure-ref': 'REDACTED'
+    'Strict-Transport-Security': 'REDACTED'
+    'X-Cache': 'REDACTED'
+2026-01-30 15:15:50,571:main:INFO:Started media streaming for 20005680-3d3a-4eea-95a9-3fa4dbec5a13
+2026-01-30 15:15:50,572:main:INFO:Using agenda for call 20005680-3d3a-4eea-95a9-3fa4dbec5a13: You are conducting a customer satisfaction survey. Follow this agenda:
+1. Greet the customer warmly ...
+2026-01-30 15:15:50,573:azure.identity.aio._credentials.environment:INFO:No environment configuration found.
+2026-01-30 15:15:50,575:azure.identity.aio._credentials.managed_identity:INFO:ManagedIdentityCredential will use IMDS
+2026-01-30 15:15:50,577:main:INFO:Started VoiceLive agent for call 20005680-3d3a-4eea-95a9-3fa4dbec5a13
+2026-01-30 15:15:50,578:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001E1832496D0>
+2026-01-30 15:15:50,579:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001E1832482D0>
+2026-01-30 15:15:50,581:asyncio:ERROR:Unclosed connector
+connections: ['deque([(<aiohttp.client_proto.ResponseHandler object at 0x000001E18325B230>, 305362.1552411)])']
+connector: <aiohttp.connector.TCPConnector object at 0x000001E18324A490>
+2026-01-30 15:15:50,583:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Connecting to VoiceLive API with model gpt-realtime
+2026-01-30 15:15:50,586:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=REDACTED&resource=REDACTED'
+Request method: 'GET'
+Request headers:
+    'User-Agent': 'azsdk-python-identity/1.25.1 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+No body was attached to the request
+2026-01-30 15:15:50,620:azure.identity.aio._credentials.chained:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-01-30 15:15:50,916:main:INFO:Call event: Microsoft.Communication.MediaStreamingStarted for 20005680-3d3a-4eea-95a9-3fa4dbec5a13
+2026-01-30 15:15:51,003:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Setting up voice conversation session...
+2026-01-30 15:15:51,009:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Session configuration sent
+2026-01-30 15:15:51,010:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] VoiceLive agent ready
+2026-01-30 15:15:51,060:main:INFO:Agent found for call 20005680-3d3a-4eea-95a9-3fa4dbec5a13, setting up audio callback
+2026-01-30 15:15:51,127:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Session ready: sess_D3pCA8baBefNE8V5aFpVv
+2026-01-30 15:15:52,963:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] User started speaking
+2026-01-30 15:15:54,316:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] User stopped speaking
+2026-01-30 15:15:54,321:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Assistant response created
+2026-01-30 15:15:57,008:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] User started speaking
+2026-01-30 15:15:57,011:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Assistant finished speaking
+2026-01-30 15:15:57,014:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Response complete
+2026-01-30 15:15:58,352:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] User stopped speaking
+2026-01-30 15:15:58,362:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Assistant response created
+2026-01-30 15:16:00,400:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] User started speaking
+2026-01-30 15:16:00,406:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Assistant finished speaking
+2026-01-30 15:16:00,411:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Response complete
+2026-01-30 15:16:02,611:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] User stopped speaking
+2026-01-30 15:16:02,613:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Assistant response created
+2026-01-30 15:16:05,278:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] User started speaking
+2026-01-30 15:16:05,286:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Assistant finished speaking
+2026-01-30 15:16:05,294:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Response complete
+2026-01-30 15:16:06,834:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] User stopped speaking
+2026-01-30 15:16:06,835:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Assistant response created
+2026-01-30 15:16:09,220:main:INFO:Call event: Microsoft.Communication.CallDisconnected for 20005680-3d3a-4eea-95a9-3fa4dbec5a13
+2026-01-30 15:16:09,220:voicelive_agent:INFO:[20005680-3d3a-4eea-95a9-3fa4dbec5a13] Stopping agent
+2026-01-30 15:16:09,221:main:INFO:Stopped VoiceLive agent for call 20005680-3d3a-4eea-95a9-3fa4dbec5a13
+2026-01-30 15:16:09,308:main:INFO:Call event: Microsoft.Communication.MediaStreamingStopped for 20005680-3d3a-4eea-95a9-3fa4dbec5a13
+2026-01-30 15:19:08,363:main:INFO:Shutting down - cleaning up active calls
+2026-01-30 15:19:08,472:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001E1831CE350>
