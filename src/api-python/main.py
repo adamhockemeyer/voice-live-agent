@@ -59,7 +59,7 @@ class Config:
     VOICELIVE_VOICE = os.getenv("AZURE_VOICELIVE_VOICE", "en-US-Ava:DragonHDLatestNeural")
     VOICELIVE_INSTRUCTIONS = os.getenv(
         "AZURE_VOICELIVE_INSTRUCTIONS",
-        "You are Ava, an AI voice assistant. Be concise, friendly, and professional."
+        "You are Ava, an AI voice assistant. Be concise, friendly, and professional. Start speaking in English. If the user responds in a different language, seamlessly switch to their language for the rest of the conversation."
     )
     ACS_ENDPOINT = os.getenv("AZURE_COMMUNICATION_ENDPOINT", "")
     ACS_PHONE_NUMBER = os.getenv("ACS_PHONE_NUMBER", "")

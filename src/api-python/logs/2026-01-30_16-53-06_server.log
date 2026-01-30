@@ -329,3 +329,28 @@ azure.identity._exceptions.CredentialUnavailableError: ManagedIdentityCredential
 2026-01-30 16:54:51,776:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
 2026-01-30 16:54:51,776:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
 2026-01-30 16:54:52,199:voicelive_agent:INFO:Pre-warmed connection created in 0.43s
+2026-01-30 16:55:18,273:voicelive_agent:DEBUG:Removed expired warm connection
+2026-01-30 16:55:18,274:voicelive_agent:DEBUG:Creating new warm connection...
+2026-01-30 16:55:18,274:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-01-30 16:55:18,275:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-01-30 16:55:18,276:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-01-30 16:55:18,277:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-01-30 16:55:18,550:voicelive_agent:INFO:Pre-warmed connection created in 0.28s
+2026-01-30 16:55:24,607:voicelive_agent:DEBUG:Removed expired warm connection
+2026-01-30 16:55:24,607:voicelive_agent:DEBUG:Creating new warm connection...
+2026-01-30 16:55:24,608:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-01-30 16:55:24,608:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-01-30 16:55:24,609:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-01-30 16:55:24,610:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-01-30 16:55:24,908:voicelive_agent:INFO:Pre-warmed connection created in 0.30s
+2026-01-30 16:55:42,686:main:INFO:Shutting down - cleaning up active calls
+2026-01-30 16:55:42,688:voicelive_agent:DEBUG:Error closing pooled connection: 'VoiceLiveConnection' object has no attribute '__aexit__'
+2026-01-30 16:55:42,691:voicelive_agent:DEBUG:Error closing pooled connection: 'VoiceLiveConnection' object has no attribute '__aexit__'
+2026-01-30 16:55:42,692:voicelive_agent:INFO:Connection pool stopped
+2026-01-30 16:55:42,693:main:INFO:Connection pool shutdown complete
+2026-01-30 16:55:42,695:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001D5A8FFB380>
+2026-01-30 16:55:42,760:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001D5A9107D90>
+2026-01-30 16:55:42,762:asyncio:ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001D5A9150190>

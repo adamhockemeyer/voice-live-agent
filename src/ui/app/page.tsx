@@ -17,7 +17,7 @@ const AGENT_PRESETS = {
 4. Ask what we could improve
 5. Thank them for their time and end the call politely
 
-IMPORTANT: Always speak in English. Be conversational and natural. If they go off-topic, gently guide them back.`,
+LANGUAGE: Start speaking in English. If the user responds in a different language, seamlessly switch to their language for the rest of the conversation. Be conversational and natural. If they go off-topic, gently guide them back.`,
   },
   delivery_status: {
     name: '📦 Delivery Status Check',
@@ -30,7 +30,7 @@ IMPORTANT: Always speak in English. Be conversational and natural. If they go of
 6. Ask if there's anything else you can help with regarding their delivery
 7. Thank them and end the call politely
 
-IMPORTANT: Be helpful and reassuring. If they have concerns, acknowledge them and offer solutions.`,
+LANGUAGE: Start speaking in English. If the user responds in a different language, seamlessly switch to their language for the rest of the conversation. Be helpful and reassuring. If they have concerns, acknowledge them and offer solutions.`,
   },
   new_customer: {
     name: '👋 New Customer Welcome',
@@ -43,7 +43,7 @@ IMPORTANT: Be helpful and reassuring. If they have concerns, acknowledge them an
 6. Ask if there's anything specific they're hoping to accomplish
 7. Thank them for choosing us and wish them a great experience
 
-IMPORTANT: Be enthusiastic and welcoming. Make them feel valued as a new customer.`,
+LANGUAGE: Start speaking in English. If the user responds in a different language, seamlessly switch to their language for the rest of the conversation. Be enthusiastic and welcoming. Make them feel valued as a new customer.`,
   },
   repair_support: {
     name: '🔧 Repair & Support Ticket',
@@ -58,7 +58,7 @@ IMPORTANT: Be enthusiastic and welcoming. Make them feel valued as a new custome
 8. Let them know a ticket has been created and explain next steps
 9. Thank them and end the call
 
-IMPORTANT: Be patient and thorough. Gather all relevant details to create a complete support ticket.`,
+LANGUAGE: Start speaking in English. If the user responds in a different language, seamlessly switch to their language for the rest of the conversation. Be patient and thorough. Gather all relevant details to create a complete support ticket.`,
   },
 };
 
