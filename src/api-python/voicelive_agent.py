@@ -6,8 +6,10 @@ from __future__ import annotations
 import asyncio
 import base64
 import logging
+import time
 from typing import Union, Optional, TYPE_CHECKING
 from datetime import datetime
+from collections import deque
 
 from azure.core.credentials import AzureKeyCredential
 from azure.core.credentials_async import AsyncTokenCredential
@@ -31,6 +33,223 @@ if TYPE_CHECKING:
     from fastapi import WebSocket
 
 logger = logging.getLogger(__name__)
+
+
+class WarmConnection:
+    """A pre-warmed VoiceLive connection ready for immediate use."""
+    
+    def __init__(self, connection: "VoiceLiveConnection", created_at: float):
+        self.connection = connection
+        self.created_at = created_at
+        self.session_ready = False
+        self._context_manager = None
+    
+    def is_expired(self, max_age_seconds: float = 30.0) -> bool:
+        """Check if connection is too old to use."""
+        return (time.time() - self.created_at) > max_age_seconds
+
+
+class ConnectionPool:
+    """
+    Pool of pre-warmed VoiceLive connections to reduce call start latency.
+    
+    Maintains a small pool of ready-to-use connections that can be claimed
+    by incoming calls, eliminating the connection establishment delay.
+    """
+    
+    def __init__(
+        self,
+        endpoint: str,
+        credential: Union[AzureKeyCredential, AsyncTokenCredential],
+        model: str,
+        pool_size: int = 2,
+        max_connection_age: float = 30.0,
+    ):
+        self.endpoint = endpoint
+        self.credential = credential
+        self.model = model
+        self.pool_size = pool_size
+        self.max_connection_age = max_connection_age
+        
+        self._pool: deque[WarmConnection] = deque()
+        self._lock = asyncio.Lock()
+        self._warming_task: Optional[asyncio.Task] = None
+        self._running = False
+    
+    async def start(self):
+        """Start the connection pool and begin pre-warming."""
+        self._running = True
+        self._warming_task = asyncio.create_task(self._maintain_pool())
+        logger.info(f"Connection pool started (size={self.pool_size})")
+    
+    async def stop(self):
+        """Stop the connection pool and cleanup."""
+        self._running = False
+        if self._warming_task:
+            self._warming_task.cancel()
+            try:
+                await self._warming_task
+            except asyncio.CancelledError:
+                pass
+        
+        # Close all pooled connections
+        async with self._lock:
+            while self._pool:
+                warm = self._pool.popleft()
+                try:
+                    await warm.connection.__aexit__(None, None, None)
+                except Exception as e:
+                    logger.debug(f"Error closing pooled connection: {e}")
+        
+        logger.info("Connection pool stopped")
+    
+    async def _create_warm_connection(self) -> Optional[WarmConnection]:
+        """Create a new pre-warmed connection."""
+        try:
+            logger.debug("Creating new warm connection...")
+            start = time.time()
+            
+            # Create connection context manager and enter it
+            ctx = connect(
+                endpoint=self.endpoint,
+                credential=self.credential,
+                model=self.model,
+            )
+            connection = await ctx.__aenter__()
+            
+            warm = WarmConnection(connection, time.time())
+            warm._context_manager = ctx
+            
+            elapsed = time.time() - start
+            logger.info(f"Pre-warmed connection created in {elapsed:.2f}s")
+            return warm
+            
+        except Exception as e:
+            logger.error(f"Failed to create warm connection: {e}")
+            return None
+    
+    async def _maintain_pool(self):
+        """Background task to maintain pool of warm connections."""
+        while self._running:
+            try:
+                async with self._lock:
+                    # Remove expired connections
+                    while self._pool and self._pool[0].is_expired(self.max_connection_age):
+                        expired = self._pool.popleft()
+                        try:
+                            if expired._context_manager:
+                                await expired._context_manager.__aexit__(None, None, None)
+                        except Exception as e:
+                            logger.debug(f"Error closing expired connection: {e}")
+                        logger.debug("Removed expired warm connection")
+                    
+                    current_size = len(self._pool)
+                
+                # Create new connections if pool is below target
+                if current_size < self.pool_size:
+                    warm = await self._create_warm_connection()
+                    if warm:
+                        async with self._lock:
+                            self._pool.append(warm)
+                
+                # Check pool every 5 seconds
+                await asyncio.sleep(5.0)
+                
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(f"Error in pool maintenance: {e}")
+                await asyncio.sleep(1.0)
+    
+    async def acquire(self) -> Optional[tuple["VoiceLiveConnection", WarmConnection]]:
+        """
+        Acquire a warm connection from the pool.
+        
+        Returns tuple of (connection, warm_connection) or None if pool is empty.
+        The warm_connection contains the context manager for cleanup.
+        """
+        async with self._lock:
+            # Find a non-expired connection
+            while self._pool:
+                warm = self._pool.popleft()
+                if not warm.is_expired(self.max_connection_age):
+                    logger.info("Acquired warm connection from pool")
+                    # Trigger refill
+                    asyncio.create_task(self._trigger_refill())
+                    return (warm.connection, warm)
+                else:
+                    # Close expired connection
+                    try:
+                        if warm._context_manager:
+                            await warm._context_manager.__aexit__(None, None, None)
+                    except Exception:
+                        pass
+        
+        logger.debug("No warm connections available in pool")
+        return None
+    
+    async def _trigger_refill(self):
+        """Trigger a pool refill after acquiring a connection."""
+        # Small delay to avoid thundering herd
+        await asyncio.sleep(0.1)
+        warm = await self._create_warm_connection()
+        if warm:
+            async with self._lock:
+                if len(self._pool) < self.pool_size:
+                    self._pool.append(warm)
+                else:
+                    # Pool is full, close this connection
+                    try:
+                        if warm._context_manager:
+                            await warm._context_manager.__aexit__(None, None, None)
+                    except Exception:
+                        pass
+    
+    def pool_status(self) -> dict:
+        """Get current pool status."""
+        return {
+            "size": len(self._pool),
+            "target_size": self.pool_size,
+            "running": self._running,
+        }
+
+
+# Global connection pool instance
+_connection_pool: Optional[ConnectionPool] = None
+
+
+async def init_connection_pool(
+    endpoint: str,
+    credential: Union[AzureKeyCredential, AsyncTokenCredential],
+    model: str,
+    pool_size: int = 2,
+) -> ConnectionPool:
+    """Initialize the global connection pool."""
+    global _connection_pool
+    if _connection_pool is not None:
+        await _connection_pool.stop()
+    
+    _connection_pool = ConnectionPool(
+        endpoint=endpoint,
+        credential=credential,
+        model=model,
+        pool_size=pool_size,
+    )
+    await _connection_pool.start()
+    return _connection_pool
+
+
+async def shutdown_connection_pool():
+    """Shutdown the global connection pool."""
+    global _connection_pool
+    if _connection_pool:
+        await _connection_pool.stop()
+        _connection_pool = None
+
+
+def get_connection_pool() -> Optional[ConnectionPool]:
+    """Get the global connection pool instance."""
+    return _connection_pool
 
 
 class VoiceLiveAgent:
@@ -67,6 +286,7 @@ class VoiceLiveAgent:
         self._running = False
         self._audio_output_callback = None
         self._transcript_callback = None
+        self._warm_connection: Optional[WarmConnection] = None
 
     def set_audio_output_callback(self, callback):
         """Set callback for audio output from the agent."""
@@ -79,24 +299,56 @@ class VoiceLiveAgent:
     async def start(self):
         """Start the VoiceLive agent session."""
         self._running = True
+        start_time = time.time()
 
         try:
-            logger.info(f"[{self.call_id}] Connecting to VoiceLive API with model {self.model}")
-
-            async with connect(
-                endpoint=self.endpoint,
-                credential=self.credential,
-                model=self.model,
-            ) as connection:
+            # Try to get a pre-warmed connection from the pool first
+            pool = get_connection_pool()
+            warm_result = None
+            if pool:
+                warm_result = await pool.acquire()
+            
+            if warm_result:
+                # Use pre-warmed connection
+                connection, self._warm_connection = warm_result
                 self.connection = connection
+                elapsed = time.time() - start_time
+                logger.info(f"[{self.call_id}] Using pre-warmed connection (acquired in {elapsed:.3f}s)")
+                
+                try:
+                    # Configure session
+                    await self._setup_session()
+                    logger.info(f"[{self.call_id}] VoiceLive agent ready")
+                    
+                    # Process events
+                    await self._process_events()
+                finally:
+                    # Clean up the warm connection
+                    if self._warm_connection and self._warm_connection._context_manager:
+                        try:
+                            await self._warm_connection._context_manager.__aexit__(None, None, None)
+                        except Exception as e:
+                            logger.debug(f"[{self.call_id}] Error closing warm connection: {e}")
+            else:
+                # Fall back to creating new connection
+                logger.info(f"[{self.call_id}] Connecting to VoiceLive API with model {self.model}")
 
-                # Configure session
-                await self._setup_session()
+                async with connect(
+                    endpoint=self.endpoint,
+                    credential=self.credential,
+                    model=self.model,
+                ) as connection:
+                    self.connection = connection
+                    elapsed = time.time() - start_time
+                    logger.info(f"[{self.call_id}] Connection established in {elapsed:.2f}s")
 
-                logger.info(f"[{self.call_id}] VoiceLive agent ready")
+                    # Configure session
+                    await self._setup_session()
 
-                # Process events
-                await self._process_events()
+                    logger.info(f"[{self.call_id}] VoiceLive agent ready")
+
+                    # Process events
+                    await self._process_events()
 
         except asyncio.CancelledError:
             logger.info(f"[{self.call_id}] Agent cancelled")
@@ -105,6 +357,7 @@ class VoiceLiveAgent:
         finally:
             self._running = False
             self.connection = None
+            self._warm_connection = None
 
     async def stop(self):
         """Stop the VoiceLive agent."""
@@ -193,6 +446,9 @@ class VoiceLiveAgent:
                     "type": "session_ready",
                     "session_id": event.session.id,
                 })
+            
+            # Trigger initial greeting - tell the model to start the conversation
+            await self._trigger_initial_greeting()
 
         elif event.type == ServerEventType.INPUT_AUDIO_BUFFER_SPEECH_STARTED:
             logger.info(f"[{self.call_id}] User started speaking")
@@ -307,3 +563,16 @@ class VoiceLiveAgent:
                 await self.websocket.send_json(data)
             except Exception as e:
                 logger.error(f"[{self.call_id}] Failed to send to websocket: {e}")
+
+    async def _trigger_initial_greeting(self):
+        """Trigger the AI to start the conversation with a greeting."""
+        if not self.connection:
+            return
+        
+        try:
+            logger.info(f"[{self.call_id}] Triggering initial greeting")
+            # Create a response to prompt the AI to speak first
+            await self.connection.response.create()
+            logger.info(f"[{self.call_id}] Initial greeting triggered")
+        except Exception as e:
+            logger.error(f"[{self.call_id}] Failed to trigger initial greeting: {e}")

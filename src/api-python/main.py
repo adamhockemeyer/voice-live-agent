@@ -31,7 +31,7 @@ from dotenv import load_dotenv
 import uvicorn
 import json
 
-from voicelive_agent import VoiceLiveAgent
+from voicelive_agent import VoiceLiveAgent, init_connection_pool, shutdown_connection_pool
 
 # Load environment variables
 load_dotenv()
@@ -59,7 +59,7 @@ class Config:
     VOICELIVE_VOICE = os.getenv("AZURE_VOICELIVE_VOICE", "en-US-Ava:DragonHDLatestNeural")
     VOICELIVE_INSTRUCTIONS = os.getenv(
         "AZURE_VOICELIVE_INSTRUCTIONS",
-        "You are a helpful AI voice assistant. Be concise and professional."
+        "You are Ava, an AI voice assistant. Be concise, friendly, and professional."
     )
     ACS_ENDPOINT = os.getenv("AZURE_COMMUNICATION_ENDPOINT", "")
     ACS_PHONE_NUMBER = os.getenv("ACS_PHONE_NUMBER", "")
@@ -74,12 +74,19 @@ active_media_websockets: Dict[str, WebSocket] = {}  # Store media websockets for
 call_transcripts: Dict[str, list] = {}  # Store transcripts per call
 transcript_subscribers: Dict[str, list] = {}  # SSE subscribers per call
 
+# Current inbound agent instructions (can be updated via API)
+inbound_agent_instructions: str = Config.VOICELIVE_INSTRUCTIONS
+
 
 # Request/Response Models
 class OutboundCallRequest(BaseModel):
     target_phone_number: str
     source_phone_number: Optional[str] = None
     agenda: Optional[str] = None
+
+
+class InboundAgentRequest(BaseModel):
+    instructions: str
 
 
 class CallResponse(BaseModel):
@@ -94,7 +101,23 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Voice Live Agent Server")
     logger.info(f"VoiceLive Endpoint: {Config.VOICELIVE_ENDPOINT}")
     logger.info(f"ACS Endpoint: {Config.ACS_ENDPOINT}")
+    
+    # Initialize connection pool for pre-warming VoiceLive connections
+    if Config.VOICELIVE_ENDPOINT:
+        try:
+            credential = DefaultAzureCredential()
+            await init_connection_pool(
+                endpoint=Config.VOICELIVE_ENDPOINT,
+                credential=credential,
+                model=Config.VOICELIVE_MODEL,
+                pool_size=2,  # Pre-warm 2 connections
+            )
+            logger.info("Connection pool initialized for pre-warming")
+        except Exception as e:
+            logger.warning(f"Failed to initialize connection pool: {e}")
+    
     yield
+    
     # Cleanup on shutdown
     logger.info("Shutting down - cleaning up active calls")
     for call_id, agent in list(active_agents.items()):
@@ -102,6 +125,10 @@ async def lifespan(app: FastAPI):
             await agent.stop()
         except Exception as e:
             logger.error(f"Error stopping agent {call_id}: {e}")
+    
+    # Shutdown connection pool
+    await shutdown_connection_pool()
+    logger.info("Connection pool shutdown complete")
 
 
 # FastAPI App
@@ -122,7 +149,14 @@ app.add_middleware(
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+    from voicelive_agent import get_connection_pool
+    pool = get_connection_pool()
+    pool_status = pool.pool_status() if pool else {"status": "not_initialized"}
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "connection_pool": pool_status,
+    }
 
 
 @app.get("/api/config")
@@ -133,6 +167,21 @@ async def get_config():
         "acs_configured": bool(Config.ACS_ENDPOINT),
         "voicelive_configured": bool(Config.VOICELIVE_ENDPOINT),
     }
+
+
+@app.get("/api/inbound-agent")
+async def get_inbound_agent():
+    """Get current inbound agent instructions."""
+    return {"instructions": inbound_agent_instructions}
+
+
+@app.post("/api/inbound-agent")
+async def set_inbound_agent(request: InboundAgentRequest):
+    """Set instructions for inbound calls."""
+    global inbound_agent_instructions
+    inbound_agent_instructions = request.instructions
+    logger.info(f"Updated inbound agent instructions: {request.instructions[:100]}...")
+    return {"success": True, "instructions": inbound_agent_instructions}
 
 
 @app.get("/api/calls")
@@ -362,7 +411,12 @@ async def broadcast_transcript(call_id: str, role: str, text: str, partial: bool
     if call_id not in call_transcripts:
         call_transcripts[call_id] = []
     
-    transcript_entry = {"role": role, "text": text, "partial": partial}
+    transcript_entry = {
+        "role": role,
+        "text": text,
+        "partial": partial,
+        "timestamp": datetime.now().isoformat(),
+    }
     if not partial:
         call_transcripts[call_id].append(transcript_entry)
     
@@ -438,10 +492,18 @@ async def start_voicelive_agent(call_id: str):
         return
 
     try:
-        # Get agenda from stored call info, or use default instructions
+        # Get agenda from stored call info
         call_info = active_calls.get(call_id, {})
-        agenda = call_info.get("agenda") or Config.VOICELIVE_INSTRUCTIONS
-        logger.info(f"Using agenda for call {call_id}: {agenda[:100]}...")
+        direction = call_info.get("direction", "inbound")
+        
+        # For outbound calls, use the agenda from the call request
+        # For inbound calls, use the current inbound_agent_instructions
+        if direction == "outbound":
+            agenda = call_info.get("agenda") or Config.VOICELIVE_INSTRUCTIONS
+        else:
+            agenda = inbound_agent_instructions
+        
+        logger.info(f"Using agenda for {direction} call {call_id}: {agenda[:100]}...")
 
         # Initialize transcript storage for this call
         call_transcripts[call_id] = []
