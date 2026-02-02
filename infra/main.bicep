@@ -113,6 +113,8 @@ module apiContainerApp 'modules/container-app.bicep' = {
     ]
     secrets: []
   }
+  // Note: CALLBACK_URI will be set after deployment via azd hooks or app settings update
+  // since it requires the container app's FQDN which creates a circular dependency
 }
 
 // UI Container App
@@ -145,6 +147,19 @@ module apiRoleAssignments 'modules/role-assignments.bicep' = {
     storageAccountName: storage.outputs.name
     aiServicesName: aiServices.outputs.name
     communicationServicesName: communicationServices.outputs.name
+  }
+}
+
+// Event Grid for incoming call routing
+module eventGrid 'modules/event-grid.bicep' = {
+  name: 'event-grid'
+  scope: rg
+  params: {
+    name: 'evgt-${environmentName}'
+    location: location
+    tags: tags
+    communicationServicesId: communicationServices.outputs.id
+    webhookEndpoint: 'https://${apiContainerApp.outputs.fqdn}/api/calls/inbound'
   }
 }
 

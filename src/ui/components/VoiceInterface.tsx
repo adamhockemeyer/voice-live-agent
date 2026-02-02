@@ -19,6 +19,7 @@ export function VoiceInterface({ onCallStarted, onCallEnded, onTranscript, agend
   const audioContextRef = useRef<AudioContext | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const playbackQueueRef = useRef<Float32Array[]>([]);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -90,6 +91,7 @@ export function VoiceInterface({ onCallStarted, onCallEnded, onTranscript, agend
       setError(`Failed to start call: ${err}`);
       handleDisconnect();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wsUrl, onCallStarted, onTranscript, agenda]);
 
   const startAudioCapture = async () => {
@@ -153,6 +155,7 @@ export function VoiceInterface({ onCallStarted, onCallEnded, onTranscript, agend
       wsRef.current.send(JSON.stringify({ type: 'end_call' }));
     }
     handleDisconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDisconnect = useCallback(() => {

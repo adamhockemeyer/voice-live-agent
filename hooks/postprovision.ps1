@@ -21,10 +21,31 @@ foreach ($line in $envOutput) {
 $acsName = $envValues['AZURE_COMMUNICATION_SERVICES']
 $acsPhoneNumber = ""
 $resourceGroup = $envValues['AZURE_RESOURCE_GROUP']
+$apiUrl = $envValues['API_URL']
+$envName = $envValues['AZURE_ENV_NAME']
 
 # If we don't have resource group from azd, try to extract from location
 if (-not $resourceGroup) {
-    $resourceGroup = "rg-" + $envValues['AZURE_ENV_NAME']
+    $resourceGroup = "rg-" + $envName
+}
+
+# Update API Container App with CALLBACK_URI environment variable
+Write-Host ""
+Write-Host "Updating API Container App with CALLBACK_URI..." -ForegroundColor Yellow
+if ($apiUrl -and $resourceGroup) {
+    $apiContainerAppName = "ca-api-$envName"
+    $callbackUri = "https://$apiUrl"
+    try {
+        az containerapp update `
+            --name $apiContainerAppName `
+            --resource-group $resourceGroup `
+            --set-env-vars "CALLBACK_URI=$callbackUri" `
+            --output none
+        Write-Host "Set CALLBACK_URI=$callbackUri on $apiContainerAppName" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "Warning: Could not update CALLBACK_URI: $_" -ForegroundColor Yellow
+    }
 }
 
 # Check for existing phone numbers
@@ -45,7 +66,8 @@ if ($acsName) {
             if ($phoneNumbers -and $phoneNumbers.Count -gt 0) {
                 $acsPhoneNumber = $phoneNumbers[0].phoneNumber
                 Write-Host "Found existing phone number: $acsPhoneNumber" -ForegroundColor Green
-            } else {
+            }
+            else {
                 Write-Host "No phone numbers found." -ForegroundColor Yellow
                 Write-Host ""
                 Write-Host "To enable phone calls, purchase a number in Azure Portal:" -ForegroundColor Yellow
@@ -54,14 +76,16 @@ if ($acsName) {
                 Write-Host "  3. Click 'Get' and purchase a toll-free number with voice capabilities" -ForegroundColor Gray
                 Write-Host "  4. Add the number to src/api-python/.env as ACS_PHONE_NUMBER" -ForegroundColor Gray
             }
-        } else {
+        }
+        else {
             Write-Host "Could not get ACS connection string" -ForegroundColor Yellow
         }
     }
     catch {
         Write-Host "Could not check phone numbers: $_" -ForegroundColor Yellow
     }
-} else {
+}
+else {
     Write-Host "ACS not configured" -ForegroundColor Yellow
 }
 
@@ -105,7 +129,8 @@ Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 if ($acsPhoneNumber) {
     Write-Host "Phone Number: $acsPhoneNumber" -ForegroundColor Cyan
-} else {
+}
+else {
     Write-Host "Phone Number: Not configured (see instructions above)" -ForegroundColor Yellow
 }
 Write-Host ""
