@@ -8,6 +8,7 @@ import { AgentTypeManager } from '@/components/AgentTypeManager';
 import { AgendaEditor } from '@/components/AgendaEditor';
 import { CallHeader } from '@/components/CallHeader';
 import { CallTabs } from '@/components/CallTabs';
+import { fetchApiUrl, getApiUrl } from '@/lib/api';
 
 interface ConfigInfo {
   inbound_phone_number: string | null;
@@ -49,27 +50,17 @@ export default function Home() {
     getAgentType,
   } = useAgentTypes();
 
-  // Determine API URL: use env var if set, otherwise derive from current hostname
-  // In Azure Container Apps, UI is ca-ui-* and API is ca-api-* on same domain
-  const getApiUrl = () => {
-    // Check for explicit env var first (works for local dev)
-    if (process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL !== 'http://localhost:3001') {
-      return process.env.NEXT_PUBLIC_API_URL;
-    }
-    // In browser, derive API URL from current hostname
-    if (typeof window !== 'undefined') {
-      const hostname = window.location.hostname;
-      // If running on Azure Container Apps (ca-ui-*), derive API URL
-      if (hostname.includes('ca-ui-')) {
-        const apiHostname = hostname.replace('ca-ui-', 'ca-api-');
-        return `https://${apiHostname}`;
-      }
-    }
-    // Fallback for local development
-    return 'http://localhost:8000';
-  };
-  
-  const apiUrl = getApiUrl();
+  // Keep apiUrl in state - fetched from runtime-config endpoint
+  const [apiUrl, setApiUrl] = useState<string>('http://localhost:8000');
+  const [apiUrlLoaded, setApiUrlLoaded] = useState(false);
+
+  // Fetch API URL from runtime-config on mount
+  useEffect(() => {
+    fetchApiUrl().then((url) => {
+      setApiUrl(url);
+      setApiUrlLoaded(true);
+    });
+  }, []);
 
   // Initialize agenda when agent types are loaded
   useEffect(() => {
@@ -118,7 +109,7 @@ export default function Home() {
 
   // Sync initial inbound agent type to backend on mount only
   useEffect(() => {
-    if (!agentTypesLoaded) return;
+    if (!agentTypesLoaded || !apiUrlLoaded) return;
     const syncInboundAgent = async () => {
       const defaultType = getAgentType('customer_satisfaction');
       if (!defaultType) return;
@@ -134,18 +125,25 @@ export default function Home() {
     };
     syncInboundAgent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiUrl, agentTypesLoaded]);
+  }, [agentTypesLoaded, apiUrlLoaded]);
 
-  // Fetch config on mount
+  // Fetch config when API URL is loaded
   useEffect(() => {
+    if (!apiUrlLoaded) return;
+    console.log('Fetching config from:', apiUrl);
     fetch(`${apiUrl}/api/config`)
       .then(res => res.json())
-      .then(data => setConfig(data))
+      .then(data => {
+        console.log('Config received:', data);
+        setConfig(data);
+      })
       .catch(err => console.error('Failed to fetch config:', err));
-  }, [apiUrl]);
+  }, [apiUrlLoaded, apiUrl]);
 
   // Poll for active inbound calls
   useEffect(() => {
+    if (!apiUrlLoaded) return;
+
     const pollCalls = async () => {
       try {
         const res = await fetch(`${apiUrl}/api/calls`);
@@ -185,7 +183,7 @@ export default function Home() {
     pollCalls();
     const interval = setInterval(pollCalls, 2000);
     return () => clearInterval(interval);
-  }, [apiUrl, callId, isCallingPhone]);
+  }, [apiUrl, apiUrlLoaded, callId, isCallingPhone]);
 
   const startPhoneCall = async () => {
     if (!phoneNumber.trim()) {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { getApiUrl } from '@/lib/api';
 
 interface CallLogsProps {
   callId: string | null;
@@ -27,8 +28,6 @@ export function CallLogs({ callId }: CallLogsProps) {
   const [allLogs, setAllLogs] = useState<LogEntry[]>([]);
   const lastCallIdRef = useRef<string | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
   useEffect(() => {
     if (!callId) {
       // Call ended - mark it as ended if we had an active call
@@ -36,10 +35,10 @@ export function CallLogs({ callId }: CallLogsProps) {
         setAllLogs(prev => {
           const lastEntry = prev[prev.length - 1];
           if (lastEntry && lastEntry.status !== 'ended' && lastEntry.status !== 'disconnected' && !lastEntry.isDivider) {
-            return [...prev, { 
-              time: new Date().toLocaleTimeString(), 
+            return [...prev, {
+              time: new Date().toLocaleTimeString(),
               status: 'ended',
-              callId: lastCallIdRef.current || undefined 
+              callId: lastCallIdRef.current || undefined
             }];
           }
           return prev;
@@ -59,8 +58,8 @@ export function CallLogs({ callId }: CallLogsProps) {
           newLogs.push({ time: '', status: '', isDivider: true });
         }
         // Add dialing entry for new call
-        newLogs.push({ 
-          time: new Date().toLocaleTimeString(), 
+        newLogs.push({
+          time: new Date().toLocaleTimeString(),
           status: 'dialing',
           callId: callId
         });
@@ -70,7 +69,7 @@ export function CallLogs({ callId }: CallLogsProps) {
 
     const fetchCallStatus = async () => {
       try {
-        const response = await fetch(`${apiUrl}/api/calls`);
+        const response = await fetch(`${getApiUrl()}/api/calls`);
         if (response.ok) {
           const data = await response.json();
           const call = data.calls?.find((c: CallInfo) => c.call_id === callId);
@@ -80,8 +79,8 @@ export function CallLogs({ callId }: CallLogsProps) {
             setAllLogs(prev => {
               const lastNonDivider = [...prev].reverse().find(e => !e.isDivider);
               if (lastNonDivider?.status !== call.status) {
-                return [...prev, { 
-                  time: new Date().toLocaleTimeString(), 
+                return [...prev, {
+                  time: new Date().toLocaleTimeString(),
                   status: call.status,
                   callId: callId,
                   phoneNumber: call.phone_number
@@ -94,10 +93,10 @@ export function CallLogs({ callId }: CallLogsProps) {
             setAllLogs(prev => {
               const lastNonDivider = [...prev].reverse().find(e => !e.isDivider);
               if (lastNonDivider?.status !== 'disconnected' && lastNonDivider?.status !== 'ended') {
-                return [...prev, { 
-                  time: new Date().toLocaleTimeString(), 
+                return [...prev, {
+                  time: new Date().toLocaleTimeString(),
                   status: 'disconnected',
-                  callId: callId 
+                  callId: callId
                 }];
               }
               return prev;
@@ -114,7 +113,7 @@ export function CallLogs({ callId }: CallLogsProps) {
     fetchCallStatus();
 
     return () => clearInterval(interval);
-  }, [callId, apiUrl, callInfo]);
+  }, [callId, callInfo]);
 
   const clearLogs = () => {
     setAllLogs([]);

@@ -193,7 +193,7 @@ module uiContainerApp 'modules/container-app.bicep' = {
     ]
     env: [
       {
-        name: 'NEXT_PUBLIC_API_URL'
+        name: 'API_URL'
         value: 'https://${apiContainerApp.outputs.fqdn}'
       }
       {

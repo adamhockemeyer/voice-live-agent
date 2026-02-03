@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getApiUrl } from '@/lib/api';
 
 interface CallControlsProps {
   isCallActive: boolean;
@@ -11,14 +12,12 @@ export function CallControls({ isCallActive, callId }: CallControlsProps) {
   const [recordingUrl, setRecordingUrl] = useState<string | null>(null);
   const [loadingRecording, setLoadingRecording] = useState(false);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
   const fetchRecording = async () => {
     if (!callId) return;
 
     setLoadingRecording(true);
     try {
-      const response = await fetch(`${apiUrl}/api/calls/${callId}/recording`);
+      const response = await fetch(`${getApiUrl()}/api/calls/${callId}/recording`);
       if (response.ok) {
         const data = await response.json();
         setRecordingUrl(data.recordingUrl);

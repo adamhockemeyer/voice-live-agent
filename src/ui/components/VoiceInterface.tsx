@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { getApiUrl, getWsUrl } from '@/lib/api';
 
 interface VoiceInterfaceProps {
   onCallStarted: (callId: string) => void;
@@ -23,15 +24,9 @@ export function VoiceInterface({ onCallStarted, onCallEnded, onTranscript, agend
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const playbackQueueRef = useRef<Float32Array[]>([]);
 
-  const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-  const rawWsUrl = process.env.NEXT_PUBLIC_WS_URL;
-  const resolvedApiUrl = rawApiUrl.startsWith('http')
-    ? rawApiUrl
-    : `${typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https' : 'http'}://${rawApiUrl}`;
-  const resolvedWsBase = rawWsUrl
-    ? (rawWsUrl.startsWith('ws') ? rawWsUrl : rawWsUrl.replace(/^http/, 'ws'))
-    : resolvedApiUrl.replace(/^http/, 'ws');
-  const wsUrl = resolvedWsBase.endsWith('/ws') ? resolvedWsBase : `${resolvedWsBase}/ws`;
+  // Get API and WebSocket URLs using runtime detection
+  const wsBaseUrl = getWsUrl();
+  const wsUrl = wsBaseUrl.endsWith('/ws') ? wsBaseUrl : `${wsBaseUrl}/ws`;
 
   const startCall = useCallback(async () => {
     try {

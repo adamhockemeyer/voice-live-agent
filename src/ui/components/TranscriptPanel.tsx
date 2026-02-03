@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { getApiUrl } from '@/lib/api';
 
 interface TranscriptPanelProps {
   transcripts: Array<{ role: string; text: string }>;
@@ -21,8 +22,6 @@ export function TranscriptPanel({ transcripts, callId, isCallActive }: Transcrip
   const [recordingError, setRecordingError] = useState<string | null>(null);
   const [callDuration, setCallDuration] = useState(0);
   const callStartRef = useRef<number | null>(null);
-
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
   // Track call duration
   useEffect(() => {
@@ -64,7 +63,7 @@ export function TranscriptPanel({ transcripts, callId, isCallActive }: Transcrip
     setLoadingRecording(true);
     setRecordingError(null);
     try {
-      const response = await fetch(`${apiUrl}/api/calls/${callId}/recording`);
+      const response = await fetch(`${getApiUrl()}/api/calls/${callId}/recording`);
       if (response.ok) {
         const data = await response.json();
         if (data.recordingUrl) {
