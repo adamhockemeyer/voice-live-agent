@@ -49,7 +49,27 @@ export default function Home() {
     getAgentType,
   } = useAgentTypes();
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  // Determine API URL: use env var if set, otherwise derive from current hostname
+  // In Azure Container Apps, UI is ca-ui-* and API is ca-api-* on same domain
+  const getApiUrl = () => {
+    // Check for explicit env var first (works for local dev)
+    if (process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL !== 'http://localhost:3001') {
+      return process.env.NEXT_PUBLIC_API_URL;
+    }
+    // In browser, derive API URL from current hostname
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      // If running on Azure Container Apps (ca-ui-*), derive API URL
+      if (hostname.includes('ca-ui-')) {
+        const apiHostname = hostname.replace('ca-ui-', 'ca-api-');
+        return `https://${apiHostname}`;
+      }
+    }
+    // Fallback for local development
+    return 'http://localhost:8000';
+  };
+  
+  const apiUrl = getApiUrl();
 
   // Initialize agenda when agent types are loaded
   useEffect(() => {
