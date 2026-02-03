@@ -9,7 +9,7 @@ import base64
 import logging
 import time
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from contextlib import asynccontextmanager
 
 from azure.identity.aio import DefaultAzureCredential
@@ -22,9 +22,8 @@ from azure.communication.callautomation import (
     MediaStreamingContentType,
     MediaStreamingAudioChannelType,
     AudioFormat,
-    RecordingChannelType,
-    RecordingContentType,
 )
+from azure.communication.phonenumbers.aio import PhoneNumbersClient
 from azure.storage.blob.aio import BlobServiceClient
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException
@@ -85,6 +84,62 @@ inbound_agent_instructions: str = Config.VOICELIVE_INSTRUCTIONS
 
 # Storage client for recordings
 blob_service_client: Optional[BlobServiceClient] = None
+
+# Cached phone numbers (fetched dynamically from ACS)
+cached_phone_numbers: List[str] = []
+phone_numbers_last_fetched: Optional[datetime] = None
+PHONE_CACHE_TTL_SECONDS = 300  # Cache for 5 minutes
+
+
+async def get_acs_phone_numbers() -> List[str]:
+    """
+    Dynamically fetch purchased phone numbers from Azure Communication Services.
+    Returns cached results if available and not expired.
+    """
+    global cached_phone_numbers, phone_numbers_last_fetched
+    
+    # Check cache
+    if (phone_numbers_last_fetched and 
+        cached_phone_numbers and
+        (datetime.now() - phone_numbers_last_fetched).total_seconds() < PHONE_CACHE_TTL_SECONDS):
+        return cached_phone_numbers
+    
+    if not Config.ACS_ENDPOINT:
+        logger.warning("ACS endpoint not configured, cannot fetch phone numbers")
+        return []
+    
+    try:
+        credential = DefaultAzureCredential()
+        async with PhoneNumbersClient(Config.ACS_ENDPOINT, credential) as phone_client:
+            phone_numbers = []
+            async for number in phone_client.list_purchased_phone_numbers():
+                phone_numbers.append(number.phone_number)
+            
+            cached_phone_numbers = phone_numbers
+            phone_numbers_last_fetched = datetime.now()
+            logger.info(f"Fetched {len(phone_numbers)} phone numbers from ACS: {phone_numbers}")
+            return phone_numbers
+    except Exception as e:
+        logger.warning(f"Failed to fetch phone numbers from ACS: {e}")
+        # Return cached if available, even if expired
+        return cached_phone_numbers
+
+
+async def get_default_phone_number() -> Optional[str]:
+    """
+    Get the default phone number to use for outbound calls.
+    Priority: 1) ACS_PHONE_NUMBER env var, 2) First purchased number from ACS
+    """
+    # Check env var first
+    if Config.ACS_PHONE_NUMBER:
+        return Config.ACS_PHONE_NUMBER
+    
+    # Try to fetch from ACS
+    numbers = await get_acs_phone_numbers()
+    if numbers:
+        return numbers[0]
+    
+    return None
 
 
 # Request/Response Models
@@ -196,8 +251,13 @@ async def health_check():
 @app.get("/api/config")
 async def get_config():
     """Get public configuration info (e.g., inbound phone number)."""
+    # Dynamically fetch phone numbers from ACS
+    phone_numbers = await get_acs_phone_numbers()
+    default_number = await get_default_phone_number()
+    
     return {
-        "inbound_phone_number": Config.ACS_PHONE_NUMBER or None,
+        "inbound_phone_number": default_number,
+        "phone_numbers": phone_numbers,
         "acs_configured": bool(Config.ACS_ENDPOINT),
         "voicelive_configured": bool(Config.VOICELIVE_ENDPOINT),
     }
@@ -247,10 +307,12 @@ async def make_outbound_call(request: OutboundCallRequest):
         credential = DefaultAzureCredential()
         call_client = CallAutomationClient(Config.ACS_ENDPOINT, credential)
 
-        # Use provided source or default
-        source_number = request.source_phone_number or Config.ACS_PHONE_NUMBER
+        # Use provided source or dynamically get default phone number
+        source_number = request.source_phone_number
         if not source_number:
-            raise HTTPException(status_code=400, detail="No source phone number configured")
+            source_number = await get_default_phone_number()
+        if not source_number:
+            raise HTTPException(status_code=400, detail="No source phone number configured. Purchase a phone number in Azure Portal.")
 
         target = PhoneNumberIdentifier(request.target_phone_number)
         caller_id = PhoneNumberIdentifier(source_number)
@@ -704,61 +766,15 @@ async def stop_voicelive_agent(call_id: str):
 async def start_call_recording(call_id: str):
     """
     Start recording for a call using ACS Call Recording API.
-    Saves recording to blob storage.
+    Note: Recording functionality is not fully implemented yet.
     """
-    if not blob_service_client or not Config.AZURE_STORAGE_CONNECTION_STRING:
-        logger.warning(f"Blob storage not configured, skipping recording for {call_id}")
-        call_recordings[call_id] = {
-            "status": "failed",
-            "error": "Blob storage not configured"
-        }
-        return
-    
-    try:
-        credential = DefaultAzureCredential()
-        call_client = CallAutomationClient(Config.ACS_ENDPOINT, credential)
-        call_connection = call_client.get_call_connection(call_id)
-        
-        # Parse storage connection string to get account and container
-        conn_str = Config.AZURE_STORAGE_CONNECTION_STRING
-        parts = {}
-        for part in conn_str.split(';'):
-            if '=' in part:
-                k, v = part.split('=', 1)
-                parts[k] = v
-        
-        account_name = parts.get('AccountName', '')
-        if not account_name:
-            raise ValueError("Could not parse AccountName from storage connection string")
-        
-        # Create blob name with timestamp
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        blob_name = f"{call_id}_{timestamp}.wav"
-        
-        # Start recording
-        recording_state = await call_connection.start_recording(
-            recording_channel=RecordingChannelType.UNMIXED,
-            recording_content_type=RecordingContentType.AUDIO,
-            recording_storage_kind=RecordingStorageKind.ACS_STORAGE,
-        )
-        
-        # Store recording metadata
-        call_recordings[call_id] = {
-            "status": "recording",
-            "recording_id": recording_state.recording_id,
-            "blob_name": blob_name,
-            "start_time": datetime.now().isoformat(),
-            "call_id": call_id
-        }
-        
-        logger.info(f"Started recording for call {call_id}: recording_id={recording_state.recording_id}, blob={blob_name}")
-        
-    except Exception as e:
-        logger.exception(f"Failed to start recording for {call_id}")
-        call_recordings[call_id] = {
-            "status": "failed",
-            "error": str(e)
-        }
+    # Recording functionality requires additional setup (connection string, recording types)
+    # For now, just log that recording is not available
+    logger.info(f"Call recording not configured for {call_id}")
+    call_recordings[call_id] = {
+        "status": "not_configured",
+        "message": "Call recording not enabled"
+    }
 
 
 async def stop_call_recording(call_id: str):

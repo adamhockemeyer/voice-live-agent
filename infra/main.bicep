@@ -117,7 +117,7 @@ module apiContainerApp 'modules/container-app.bicep' = {
   params: {
     name: 'ca-api-${environmentName}'
     location: location
-    tags: tags
+    tags: union(tags, { 'azd-service-name': 'api' })
     containerAppsEnvironmentId: containerAppsEnvironment.outputs.id
     containerImage: '${containerRegistry.outputs.loginServer}/api:latest'
     identityType: 'UserAssigned'
@@ -156,20 +156,28 @@ module apiContainerApp 'modules/container-app.bicep' = {
         name: 'PORT'
         value: '8000'
       }
+      {
+        name: 'AZURE_CLIENT_ID'
+        value: apiIdentity.outputs.clientId
+      }
     ]
     secrets: []
   }
   // Note: CALLBACK_URI will be set after deployment via azd hooks or app settings update
   // since it requires the container app's FQDN which creates a circular dependency
-   dependsOn: [
-     apiRoleAssignments
-   ]
+  dependsOn: [
+    apiRoleAssignments
+  ]
+}
+
+// UI Container App (Next.js frontend)
+module uiContainerApp 'modules/container-app.bicep' = {
   name: 'ui-container-app'
   scope: rg
   params: {
     name: 'ca-ui-${environmentName}'
     location: location
-    tags: tags
+    tags: union(tags, { 'azd-service-name': 'ui' })
     containerAppsEnvironmentId: containerAppsEnvironment.outputs.id
     containerImage: '${containerRegistry.outputs.loginServer}/ui:latest'
     identityType: 'UserAssigned'
@@ -188,12 +196,19 @@ module apiContainerApp 'modules/container-app.bicep' = {
         name: 'NEXT_PUBLIC_API_URL'
         value: 'https://${apiContainerApp.outputs.fqdn}'
       }
+      {
+        name: 'AZURE_CLIENT_ID'
+        value: uiIdentity.outputs.clientId
+      }
     ]
     secrets: []
   }
-   dependsOn: [
-     uiRoleAssignments
-   ]
+  dependsOn: [
+    uiRoleAssignments
+  ]
+}
+
+// Role assignments for API Container App managed identity
 module apiRoleAssignments 'modules/role-assignments.bicep' = {
   name: 'api-role-assignments'
   scope: rg
@@ -233,7 +248,7 @@ module eventGrid 'modules/event-grid.bicep' = {
   scope: rg
   params: {
     name: 'evgt-${environmentName}'
-    location: location
+    location: 'global'
     tags: tags
     communicationServicesId: communicationServices.outputs.id
     webhookEndpoint: 'https://${apiContainerApp.outputs.fqdn}/api/calls/inbound'

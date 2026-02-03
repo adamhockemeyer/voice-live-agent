@@ -68,7 +68,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
         }
       ]
       scale: {
-        minReplicas: 0
+        minReplicas: 1
         maxReplicas: 10
       }
     }
@@ -78,4 +78,3 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
 output id string = containerApp.id
 output name string = containerApp.name
 output fqdn string = containerApp.properties.configuration.ingress.fqdn
-output principalId string = containerApp.identity.principalId

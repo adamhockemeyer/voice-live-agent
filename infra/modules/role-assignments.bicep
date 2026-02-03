@@ -86,7 +86,7 @@ resource acsContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01'
 
 // ACRPull role for Container Registry (allows container apps to pull images)
 resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignAcr) {
-  name: guid(containerRegistry.id, principalId, '7f951dda-4ed3-4181-b6e1-8d0ccf865d7e')
+  name: guid(containerRegistry.id, principalId, '7f951dda-4ed3-4680-a7ca-43fe172d538d')
   scope: containerRegistry
   properties: {
     principalId: principalId
