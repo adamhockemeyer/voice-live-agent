@@ -16,21 +16,31 @@ export function VoiceInterface({ onCallStarted, onCallEnded, onTranscript, agend
   const [error, setError] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
+  const closingRef = useRef(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const playbackQueueRef = useRef<Float32Array[]>([]);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-  const wsUrl = apiUrl.replace('http', 'ws') + '/ws';
+  const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const rawWsUrl = process.env.NEXT_PUBLIC_WS_URL;
+  const resolvedApiUrl = rawApiUrl.startsWith('http')
+    ? rawApiUrl
+    : `${typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https' : 'http'}://${rawApiUrl}`;
+  const resolvedWsBase = rawWsUrl
+    ? (rawWsUrl.startsWith('ws') ? rawWsUrl : rawWsUrl.replace(/^http/, 'ws'))
+    : resolvedApiUrl.replace(/^http/, 'ws');
+  const wsUrl = resolvedWsBase.endsWith('/ws') ? resolvedWsBase : `${resolvedWsBase}/ws`;
 
   const startCall = useCallback(async () => {
     try {
       setError(null);
       setStatus('Connecting...');
+      closingRef.current = false;
 
       // Initialize WebSocket
+      console.info('Voice WS URL:', wsUrl);
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
@@ -47,43 +57,91 @@ export function VoiceInterface({ onCallStarted, onCallEnded, onTranscript, agend
       };
 
       ws.onmessage = async (event) => {
-        const data = JSON.parse(event.data);
+        try {
+          const data = JSON.parse(event.data);
+          console.log('[VoiceInterface] Received message:', data.type, data);
 
-        switch (data.type) {
-          case 'call_started':
-            setStatus('Call active');
-            onCallStarted(data.callId);
-            await startAudioCapture();
-            break;
+          switch (data.type) {
+            case 'initializing':
+              console.log('[VoiceInterface] Server initializing');
+              setStatus('Initializing...');
+              if (data.callId) {
+                onCallStarted(data.callId);
+              }
+              break;
 
-          case 'audio':
-            await playAudio(data.data);
-            break;
+            case 'call_started':
+              console.log('[VoiceInterface] Call started');
+              setStatus('Call active');
+              onCallStarted(data.callId);
+              break;
 
-          case 'transcript':
-            if (data.role === 'user') {
-              onTranscript('user', data.text || data.delta);
-            } else {
-              onTranscript('assistant', data.delta || data.text);
-            }
-            break;
+            case 'ready':
+              console.log('[VoiceInterface] Server ready, initializing audio capture...');
+              try {
+                await startAudioCapture();
+                console.log('[VoiceInterface] Audio capture started successfully');
+              } catch (audioErr) {
+                console.error('[VoiceInterface] Audio capture failed:', audioErr);
+                setError(`Failed to start audio: ${audioErr}`);
+                if (wsRef.current) {
+                  wsRef.current.close();
+                }
+              }
+              break;
 
-          case 'call_ended':
-            handleDisconnect();
-            break;
+            case 'ping':
+              // Keep-alive from server during initialization
+              break;
 
-          case 'error':
-            setError(data.error?.message || 'An error occurred');
-            break;
+            case 'audio':
+              try {
+                await playAudio(data.data);
+              } catch (audioErr) {
+                console.error('[VoiceInterface] Audio playback failed:', audioErr);
+              }
+              break;
+
+            case 'transcript':
+              if (data.role === 'user') {
+                onTranscript('user', data.text || data.delta);
+              } else {
+                onTranscript('assistant', data.delta || data.text);
+              }
+              break;
+
+            case 'call_ended':
+              handleDisconnect();
+              break;
+
+            case 'error':
+              console.error('[VoiceInterface] Server error:', data.error);
+              setError(data.error?.message || 'An error occurred');
+              break;
+
+            default:
+              console.warn('[VoiceInterface] Unknown message type:', data.type);
+          }
+        } catch (err) {
+          console.error('[VoiceInterface] Message handling error:', err);
+          setError(`Message error: ${err}`);
         }
       };
 
-      ws.onerror = () => {
-        setError('WebSocket connection error');
+      ws.onerror = (event) => {
+        console.error('[VoiceInterface] WebSocket error event:', event);
+        if (!closingRef.current) {
+          setError('WebSocket connection error');
+        }
         handleDisconnect();
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event) => {
+        console.log('[VoiceInterface] WebSocket close event - code:', event.code, 'reason:', event.reason, 'closingRef:', closingRef.current);
+        if (!closingRef.current) {
+          const reason = event.reason ? `: ${event.reason}` : '';
+          setError(`WebSocket closed (${event.code})${reason}`);
+        }
         handleDisconnect();
       };
 
@@ -96,6 +154,7 @@ export function VoiceInterface({ onCallStarted, onCallEnded, onTranscript, agend
 
   const startAudioCapture = async () => {
     try {
+      console.log('[VoiceInterface] Requesting microphone access...');
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           sampleRate: 24000,
@@ -105,15 +164,22 @@ export function VoiceInterface({ onCallStarted, onCallEnded, onTranscript, agend
         }
       });
 
+      console.log('[VoiceInterface] Microphone access granted, stream:', stream.getTracks());
       mediaStreamRef.current = stream;
       audioContextRef.current = new AudioContext({ sampleRate: 24000 });
+      console.log('[VoiceInterface] Audio context created');
 
       const source = audioContextRef.current.createMediaStreamSource(stream);
-      const processor = audioContextRef.current.createScriptProcessor(4096, 1, 1);
+      // Use smaller buffer (2048) for lower latency (~85ms vs ~170ms with 4096)
+      const processor = audioContextRef.current.createScriptProcessor(2048, 1, 1);
       processorRef.current = processor;
+      console.log('[VoiceInterface] Audio processor created');
 
       processor.onaudioprocess = (event) => {
-        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+          console.warn('[VoiceInterface] WebSocket not ready, skipping audio frame');
+          return;
+        }
 
         const inputData = event.inputBuffer.getChannelData(0);
         const pcm16 = float32ToPcm16(inputData);
@@ -128,8 +194,11 @@ export function VoiceInterface({ onCallStarted, onCallEnded, onTranscript, agend
       source.connect(processor);
       processor.connect(audioContextRef.current.destination);
       setIsRecording(true);
+      console.log('[VoiceInterface] Audio capture successfully started');
     } catch (err) {
+      console.error('[VoiceInterface] startAudioCapture error:', err);
       setError(`Failed to access microphone: ${err}`);
+      throw err;
     }
   };
 
@@ -151,6 +220,7 @@ export function VoiceInterface({ onCallStarted, onCallEnded, onTranscript, agend
   };
 
   const endCall = useCallback(() => {
+    closingRef.current = true;
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type: 'end_call' }));
     }

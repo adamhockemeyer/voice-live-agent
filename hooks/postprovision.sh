@@ -38,6 +38,7 @@ if [ -n "$API_URL" ] && [ -n "$RESOURCE_GROUP" ]; then
         --output none 2>/dev/null && \
         echo "Set CALLBACK_URI=$CALLBACK_URI on $API_CONTAINER_APP_NAME" || \
         echo "Warning: Could not update CALLBACK_URI"
+    echo "Storage connection string is handled via managed identity"
 fi
 
 # Create Python API .env file

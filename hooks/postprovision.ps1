@@ -35,6 +35,7 @@ Write-Host "Updating API Container App with CALLBACK_URI..." -ForegroundColor Ye
 if ($apiUrl -and $resourceGroup) {
     $apiContainerAppName = "ca-api-$envName"
     $callbackUri = "https://$apiUrl"
+    
     try {
         az containerapp update `
             --name $apiContainerAppName `
@@ -42,6 +43,7 @@ if ($apiUrl -and $resourceGroup) {
             --set-env-vars "CALLBACK_URI=$callbackUri" `
             --output none
         Write-Host "Set CALLBACK_URI=$callbackUri on $apiContainerAppName" -ForegroundColor Green
+        Write-Host "Storage connection string is handled via managed identity" -ForegroundColor Gray
     }
     catch {
         Write-Host "Warning: Could not update CALLBACK_URI: $_" -ForegroundColor Yellow
@@ -121,6 +123,50 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 Set-Content -Path $uiEnvPath -Value $uiEnvContent
 Write-Host "Created: $uiEnvPath" -ForegroundColor Green
+
+# Ensure Event Grid subscription exists for incoming calls
+Write-Host ""
+Write-Host "Verifying Event Grid subscription for incoming calls..." -ForegroundColor Yellow
+if ($acsName -and $resourceGroup -and $apiUrl) {
+    $systemTopicName = "evgt-$envName"
+    $subscriptionName = "incoming-call-subscription"
+    $webhookUrl = "https://$apiUrl/api/calls/inbound"
+    
+    try {
+        # Check if system topic exists
+        $topicExists = az eventgrid system-topic show --name $systemTopicName --resource-group $resourceGroup 2>$null
+        
+        if (-not $topicExists) {
+            Write-Host "Event Grid system topic will be created by Bicep deployment" -ForegroundColor Gray
+        }
+        else {
+            # Check if subscription exists
+            $subExists = az eventgrid system-topic event-subscription show `
+                --name $subscriptionName `
+                --system-topic-name $systemTopicName `
+                --resource-group $resourceGroup 2>$null
+            
+            if (-not $subExists) {
+                Write-Host "Creating Event Grid subscription for incoming calls..." -ForegroundColor Yellow
+                az eventgrid system-topic event-subscription create `
+                    --name $subscriptionName `
+                    --system-topic-name $systemTopicName `
+                    --resource-group $resourceGroup `
+                    --endpoint $webhookUrl `
+                    --endpoint-type webhook `
+                    --included-event-types "Microsoft.Communication.IncomingCall" `
+                    --output none
+                Write-Host "Event Grid subscription created: $subscriptionName -> $webhookUrl" -ForegroundColor Green
+            }
+            else {
+                Write-Host "Event Grid subscription already exists" -ForegroundColor Green
+            }
+        }
+    }
+    catch {
+        Write-Host "Note: Event Grid subscription managed by Bicep template" -ForegroundColor Gray
+    }
+}
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Green

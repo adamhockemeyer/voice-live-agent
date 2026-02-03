@@ -15,6 +15,7 @@ from azure.core.credentials import AzureKeyCredential
 from azure.core.credentials_async import AsyncTokenCredential
 
 from azure.ai.voicelive.aio import connect
+from starlette.websockets import WebSocketState
 from azure.ai.voicelive.models import (
     AudioEchoCancellation,
     AudioInputTranscriptionOptions,
@@ -281,12 +282,16 @@ class VoiceLiveAgent:
 
         self.connection: Optional["VoiceLiveConnection"] = None
         self.session_ready = False
+        self.session_id: Optional[str] = None
+        self.websocket_ready = False  # Flag to control when agent can send to websocket
         self._active_response = False
         self._response_api_done = False
         self._running = False
         self._audio_output_callback = None
         self._transcript_callback = None
+        self._barge_in_callback = None  # Callback to trigger StopAudio on phone
         self._warm_connection: Optional[WarmConnection] = None
+        self._user_speaking = False  # Flag to suppress audio output during barge-in
 
     def set_audio_output_callback(self, callback):
         """Set callback for audio output from the agent."""
@@ -295,6 +300,10 @@ class VoiceLiveAgent:
     def set_transcript_callback(self, callback):
         """Set callback for transcripts."""
         self._transcript_callback = callback
+
+    def set_barge_in_callback(self, callback):
+        """Set callback for barge-in events (to stop audio on phone)."""
+        self._barge_in_callback = callback
 
     async def start(self):
         """Start the VoiceLive agent session."""
@@ -321,7 +330,12 @@ class VoiceLiveAgent:
                     logger.info(f"[{self.call_id}] VoiceLive agent ready")
                     
                     # Process events
+                    logger.info(f"[{self.call_id}] Starting event processing loop")
                     await self._process_events()
+                    logger.info(f"[{self.call_id}] Event processing loop ended normally")
+                except Exception as e:
+                    logger.exception(f"[{self.call_id}] Error in event processing: {e}")
+                    raise
                 finally:
                     # Clean up the warm connection
                     if self._warm_connection and self._warm_connection._context_manager:
@@ -346,15 +360,20 @@ class VoiceLiveAgent:
                     await self._setup_session()
 
                     logger.info(f"[{self.call_id}] VoiceLive agent ready")
-
+                    
                     # Process events
+                    logger.info(f"[{self.call_id}] Starting event processing loop")
                     await self._process_events()
+                    logger.info(f"[{self.call_id}] Event processing loop ended normally")
 
         except asyncio.CancelledError:
             logger.info(f"[{self.call_id}] Agent cancelled")
+            raise
         except Exception as e:
             logger.exception(f"[{self.call_id}] Agent error: {e}")
+            raise
         finally:
+            logger.info(f"[{self.call_id}] Agent start() finally block, setting running=False")
             self._running = False
             self.connection = None
             self._warm_connection = None
@@ -393,10 +412,11 @@ class VoiceLiveAgent:
             voice_config = self.voice
 
         # Create turn detection configuration for phone calls
+        # Lower threshold and shorter padding for faster barge-in/interruption detection
         turn_detection_config = ServerVad(
-            threshold=0.5,
-            prefix_padding_ms=200,  # Reduced for faster response
-            silence_duration_ms=500,  # Balance between responsiveness and phone latency
+            threshold=0.3,  # Lower threshold for phone audio (was 0.5)
+            prefix_padding_ms=100,  # Faster speech detection (was 200)
+            silence_duration_ms=400,  # Faster turn-taking (was 500)
         )
 
         # Create session configuration with input transcription enabled
@@ -438,20 +458,25 @@ class VoiceLiveAgent:
 
         if event.type == ServerEventType.SESSION_UPDATED:
             logger.info(f"[{self.call_id}] Session ready: {event.session.id}")
+            self.session_id = event.session.id
             self.session_ready = True
-
-            # Notify websocket client if connected
-            if self.websocket:
-                await self._send_to_websocket({
-                    "type": "session_ready",
-                    "session_id": event.session.id,
-                })
             
             # Trigger initial greeting - tell the model to start the conversation
             await self._trigger_initial_greeting()
 
         elif event.type == ServerEventType.INPUT_AUDIO_BUFFER_SPEECH_STARTED:
-            logger.info(f"[{self.call_id}] User started speaking")
+            logger.info(f"[{self.call_id}] User started speaking (barge-in)")
+            
+            # Immediately stop sending audio to allow user to interrupt
+            self._user_speaking = True
+            
+            # Trigger barge-in callback to send StopAudio to phone
+            # This clears any buffered audio on the ACS side
+            if self._barge_in_callback:
+                try:
+                    await self._barge_in_callback()
+                except Exception as e:
+                    logger.warning(f"[{self.call_id}] Barge-in callback failed: {e}")
 
             # Cancel any in-progress response (barge-in)
             if self._active_response and not self._response_api_done:
@@ -467,6 +492,9 @@ class VoiceLiveAgent:
 
         elif event.type == ServerEventType.INPUT_AUDIO_BUFFER_SPEECH_STOPPED:
             logger.info(f"[{self.call_id}] User stopped speaking")
+            
+            # Resume audio output now that user finished speaking
+            self._user_speaking = False
 
             if self.websocket:
                 await self._send_to_websocket({"type": "speech_stopped"})
@@ -478,6 +506,11 @@ class VoiceLiveAgent:
 
         elif event.type == ServerEventType.RESPONSE_AUDIO_DELTA:
             # Audio from the AI assistant - send to phone call or websocket
+            # Skip audio output if user is speaking (barge-in) to reduce latency
+            if self._user_speaking:
+                logger.debug(f"[{self.call_id}] Skipping audio delta - user is speaking (barge-in)")
+                return
+                
             if event.delta:
                 logger.debug(f"[{self.call_id}] Audio delta received: {len(event.delta)} bytes, callback set: {self._audio_output_callback is not None}")
                 if self._audio_output_callback:
@@ -558,8 +591,10 @@ class VoiceLiveAgent:
 
     async def _send_to_websocket(self, data: dict):
         """Send data to connected WebSocket client."""
-        if self.websocket:
+        if self.websocket and self.websocket_ready:
             try:
+                if self.websocket.client_state != WebSocketState.CONNECTED:
+                    return
                 await self.websocket.send_json(data)
             except Exception as e:
                 logger.error(f"[{self.call_id}] Failed to send to websocket: {e}")

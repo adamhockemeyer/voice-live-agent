@@ -78,6 +78,38 @@ module containerAppsEnvironment 'modules/container-apps-environment.bicep' = {
   }
 }
 
+// Container Registry for built images
+module containerRegistry 'modules/container-registry.bicep' = {
+  name: 'container-registry'
+  scope: rg
+  params: {
+    name: 'acr${replace(environmentName, '-', '')}'
+    location: location
+    tags: tags
+  }
+}
+
+// User-assigned identities for Container Apps (RG scope)
+module apiIdentity 'modules/managed-identity.bicep' = {
+  name: 'api-identity'
+  scope: rg
+  params: {
+    name: 'id-api-${environmentName}'
+    location: location
+    tags: tags
+  }
+}
+
+module uiIdentity 'modules/managed-identity.bicep' = {
+  name: 'ui-identity'
+  scope: rg
+  params: {
+    name: 'id-ui-${environmentName}'
+    location: location
+    tags: tags
+  }
+}
+
 // API Container App (Python with VoiceLive SDK)
 module apiContainerApp 'modules/container-app.bicep' = {
   name: 'api-container-app'
@@ -87,8 +119,18 @@ module apiContainerApp 'modules/container-app.bicep' = {
     location: location
     tags: tags
     containerAppsEnvironmentId: containerAppsEnvironment.outputs.id
-    containerImage: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
+    containerImage: '${containerRegistry.outputs.loginServer}/api:latest'
+    identityType: 'UserAssigned'
+    userAssignedIdentities: {
+      '${apiIdentity.outputs.id}': {}
+    }
     targetPort: 8000
+    registries: [
+      {
+        server: containerRegistry.outputs.loginServer
+        identity: apiIdentity.outputs.id
+      }
+    ]
     env: [
       {
         name: 'AZURE_VOICELIVE_ENDPOINT'
@@ -107,6 +149,10 @@ module apiContainerApp 'modules/container-app.bicep' = {
         value: communicationServices.outputs.endpoint
       }
       {
+        name: 'AZURE_STORAGE_ACCOUNT_NAME'
+        value: storage.outputs.name
+      }
+      {
         name: 'PORT'
         value: '8000'
       }
@@ -115,10 +161,9 @@ module apiContainerApp 'modules/container-app.bicep' = {
   }
   // Note: CALLBACK_URI will be set after deployment via azd hooks or app settings update
   // since it requires the container app's FQDN which creates a circular dependency
-}
-
-// UI Container App
-module uiContainerApp 'modules/container-app.bicep' = {
+   dependsOn: [
+     apiRoleAssignments
+   ]
   name: 'ui-container-app'
   scope: rg
   params: {
@@ -126,27 +171,59 @@ module uiContainerApp 'modules/container-app.bicep' = {
     location: location
     tags: tags
     containerAppsEnvironmentId: containerAppsEnvironment.outputs.id
-    containerImage: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
+    containerImage: '${containerRegistry.outputs.loginServer}/ui:latest'
+    identityType: 'UserAssigned'
+    userAssignedIdentities: {
+      '${uiIdentity.outputs.id}': {}
+    }
     targetPort: 3000
+    registries: [
+      {
+        server: containerRegistry.outputs.loginServer
+        identity: uiIdentity.outputs.id
+      }
+    ]
     env: [
       {
         name: 'NEXT_PUBLIC_API_URL'
-        value: apiContainerApp.outputs.fqdn
+        value: 'https://${apiContainerApp.outputs.fqdn}'
       }
     ]
     secrets: []
   }
-}
-
-// Role assignments for API Container App managed identity
+   dependsOn: [
+     uiRoleAssignments
+   ]
 module apiRoleAssignments 'modules/role-assignments.bicep' = {
   name: 'api-role-assignments'
   scope: rg
   params: {
-    principalId: apiContainerApp.outputs.principalId
+    principalId: apiIdentity.outputs.principalId
     storageAccountName: storage.outputs.name
     aiServicesName: aiServices.outputs.name
     communicationServicesName: communicationServices.outputs.name
+    containerRegistryName: containerRegistry.outputs.name
+    assignStorage: true
+    assignAI: true
+    assignAcs: true
+    assignAcr: true
+  }
+}
+
+// Role assignments for UI Container App managed identity (ACR pull)
+module uiRoleAssignments 'modules/role-assignments.bicep' = {
+  name: 'ui-role-assignments'
+  scope: rg
+  params: {
+    principalId: uiIdentity.outputs.principalId
+    storageAccountName: storage.outputs.name
+    aiServicesName: aiServices.outputs.name
+    communicationServicesName: communicationServices.outputs.name
+    containerRegistryName: containerRegistry.outputs.name
+    assignStorage: false
+    assignAI: false
+    assignAcs: false
+    assignAcr: true
   }
 }
 
@@ -175,3 +252,4 @@ output AZURE_STORAGE_BLOB_ENDPOINT string = storage.outputs.blobEndpoint
 output AZURE_COMMUNICATION_SERVICES string = communicationServices.outputs.name
 output AZURE_COMMUNICATION_ENDPOINT string = communicationServices.outputs.endpoint
 output AZURE_COMMUNICATION_RESOURCE_ID string = communicationServices.outputs.id
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.outputs.loginServer

@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { VoiceInterface } from '@/components/VoiceInterface';
 import { CallLogs } from '@/components/CallLogs';
-import { CallControls } from '@/components/CallControls';
 import { TranscriptPanel } from '@/components/TranscriptPanel';
 import { useAgentTypes } from '@/components/useAgentTypes';
 import { AgentTypeManager } from '@/components/AgentTypeManager';
 import { AgendaEditor } from '@/components/AgendaEditor';
+import { CallHeader } from '@/components/CallHeader';
+import { CallTabs } from '@/components/CallTabs';
 
 interface ConfigInfo {
   inbound_phone_number: string | null;
@@ -26,6 +26,7 @@ interface ActiveCall {
 export default function Home() {
   const [callId, setCallId] = useState<string | null>(null);
   const [isCallActive, setIsCallActive] = useState(false);
+  const [callDirection, setCallDirection] = useState<'inbound' | 'outbound' | null>(null);
   const [transcripts, setTranscripts] = useState<Array<{ role: string; text: string }>>([]);
   const [selectedAgentTypeId, setSelectedAgentTypeId] = useState<string>('customer_satisfaction');
   const [agenda, setAgenda] = useState<string>('');
@@ -36,6 +37,8 @@ export default function Home() {
   const [config, setConfig] = useState<ConfigInfo | null>(null);
   const [inboundCalls, setInboundCalls] = useState<ActiveCall[]>([]);
   const [inboundAgentTypeId, setInboundAgentTypeId] = useState<string>('customer_satisfaction');
+  const [activeTab, setActiveTab] = useState<'outbound' | 'inbound'>('outbound');
+  const [currentPhoneNumber, setCurrentPhoneNumber] = useState<string>('');
 
   const {
     agentTypes,
@@ -128,6 +131,21 @@ export default function Home() {
         const res = await fetch(`${apiUrl}/api/calls`);
         const data = await res.json();
         const inbound = (data.calls || []).filter((c: ActiveCall) => c.direction === 'inbound');
+
+        // Check for new inbound calls and auto-subscribe to transcripts
+        inbound.forEach((call: ActiveCall) => {
+          if (!callId || callId !== call.call_id) {
+            // New inbound call detected - set it as active and subscribe
+            setCallId(call.call_id);
+            setIsCallActive(true);
+            setCallDirection('inbound');
+            setCurrentPhoneNumber(call.phone_number || '');
+            setTranscripts([]);
+            setActiveTab('inbound');
+            subscribeToTranscripts(call.call_id);
+          }
+        });
+
         setInboundCalls(inbound);
 
         // Check if our active call has ended (not in the list anymore)
@@ -158,6 +176,8 @@ export default function Home() {
     setPhoneCallError(null);
     setIsCallingPhone(true);
     setTranscripts([]);
+    setCallDirection('outbound');
+    setCurrentPhoneNumber(phoneNumber);
 
     try {
       const response = await fetch(`${apiUrl}/api/calls/outbound`, {
@@ -180,10 +200,12 @@ export default function Home() {
       } else {
         setPhoneCallError(data.detail || data.message || 'Failed to start call');
         setIsCallingPhone(false);
+        setCallDirection(null);
       }
     } catch (err) {
       setPhoneCallError(`Failed to connect: ${err}`);
       setIsCallingPhone(false);
+      setCallDirection(null);
     }
   };
 
@@ -209,7 +231,7 @@ export default function Home() {
       eventSource.close();
     };
 
-    // Store reference for cleanup (could be handled via ref, but keeping simple)
+    // Store reference for cleanup
     (window as unknown as Record<string, EventSource>)[`transcriptSource_${callIdToSubscribe}`] = eventSource;
   };
 
@@ -231,268 +253,297 @@ export default function Home() {
     }
     setIsCallingPhone(false);
     setIsCallActive(false);
-    setCallId(null);
-  };
-
-  const handleCallStarted = (id: string) => {
-    setCallId(id);
-    setIsCallActive(true);
-    setTranscripts([]);
-  };
-
-  const handleCallEnded = () => {
-    setIsCallActive(false);
-  };
-
-  const handleTranscript = (role: string, text: string) => {
-    setTranscripts(prev => [...prev, { role, text }]);
   };
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Voice Live Agent
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Azure Speech Voice Live Demo with Real-time AI Conversations
-        </p>
-      </header>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column - Voice Interface */}
-        <div className="space-y-6">
-          {/* Agenda Input */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Call Agenda
-              </h2>
-              <button
-                onClick={() => setShowAgenda(!showAgenda)}
-                className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
-                disabled={isCallActive}
-              >
-                {showAgenda ? 'Collapse' : 'Expand'}
-              </button>
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Top Header */}
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                🎙️ Voice Live Agent
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Azure AI Voice Conversations
+              </p>
             </div>
-
-            {/* Agent Type Manager with create/edit/delete */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Agent Type
-              </label>
-              <AgentTypeManager
-                agentTypes={agentTypes}
-                selectedTypeId={selectedAgentTypeId}
-                onSelect={handleAgentTypeChange}
-                onAdd={addAgentType}
-                onUpdate={updateAgentType}
-                onDelete={deleteAgentType}
-                disabled={isCallActive}
-              />
+            <div className="flex items-center gap-4">
+              {config?.voicelive_configured && (
+                <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 px-2 py-1 rounded-full">
+                  ✓ VoiceLive
+                </span>
+              )}
+              {config?.acs_configured && (
+                <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 px-2 py-1 rounded-full">
+                  ✓ ACS
+                </span>
+              )}
             </div>
-
-            {showAgenda ? (
-              <AgendaEditor
-                content={agenda}
-                onChange={handleAgendaChange}
-                disabled={isCallActive}
-                placeholder="Enter the agenda or instructions for the AI agent to follow during the call..."
-              />
-            ) : (
-              <div
-                onClick={() => !isCallActive && setShowAgenda(true)}
-                className={`bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 max-h-32 overflow-y-auto ${!isCallActive ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700' : ''}`}
-              >
-                <pre className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap font-mono">
-                  {agenda}
-                </pre>
-                {!isCallActive && (
-                  <p className="text-xs text-blue-500 mt-2">Click to edit</p>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Outbound Phone Call Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-              📞 Outbound Call
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              AI agent calls a phone number and runs through the agenda.
-            </p>
-
-            {!config?.inbound_phone_number ? (
-              <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
-                <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                  ⚠️ No source phone number configured. Outbound calls require <code className="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">ACS_PHONE_NUMBER</code> in your environment.
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="flex gap-3 mb-4">
-                  <input
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="+1 555 123 4567"
-                    disabled={isCallingPhone}
-                    className="flex-1 px-4 py-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white text-lg"
-                  />
-                  {!isCallingPhone ? (
-                    <button
-                      onClick={startPhoneCall}
-                      disabled={!phoneNumber.trim()}
-                      className="px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold rounded-lg shadow transition-all"
-                    >
-                      📞 Call
-                    </button>
-                  ) : (
-                    <button
-                      onClick={hangupPhoneCall}
-                      className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg shadow transition-all"
-                    >
-                      🔴 Hang Up
-                    </button>
-                  )}
-                </div>
-
-                {phoneCallError && (
-                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded text-sm">
-                    {phoneCallError}
-                  </div>
-                )}
-
-                {isCallingPhone && (
-                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    Call in progress to {phoneNumber}...
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Inbound Phone Call Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-              📲 Inbound Calls
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Call this number to talk to the AI agent.
-            </p>
-
-            {config?.inbound_phone_number ? (
-              <div className="space-y-4">
-                {/* Inbound Agent Type Selector */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Inbound Agent Type
-                  </label>
-                  <select
-                    value={inboundAgentTypeId}
-                    onChange={(e) => handleInboundAgentTypeChange(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  >
-                    <optgroup label="Built-in">
-                      {agentTypes.filter(t => t.isBuiltIn).map(type => (
-                        <option key={type.id} value={type.id}>
-                          {type.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                    {agentTypes.some(t => !t.isBuiltIn) && (
-                      <optgroup label="Custom">
-                        {agentTypes.filter(t => !t.isBuiltIn).map(type => (
-                          <option key={type.id} value={type.id}>
-                            {type.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                  </select>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Incoming calls will use this agent type
-                  </p>
-                </div>
-
-                <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                  <p className="text-sm text-blue-600 dark:text-blue-400 mb-1">Call this number:</p>
-                  <p className="text-2xl font-bold text-blue-800 dark:text-blue-200 font-mono">
-                    {config.inbound_phone_number}
-                  </p>
-                </div>
-
-                {inboundCalls.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Active inbound calls:</p>
-                    {inboundCalls.map(call => (
-                      <div key={call.call_id} className="flex items-center gap-2 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 p-2 rounded">
-                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                        <span className="font-mono text-sm">{call.phone_number}</span>
-                        <span className="text-xs text-gray-500">({call.status})</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {inboundCalls.length === 0 && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                    Waiting for incoming calls...
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                  ⚠️ No phone number configured. Set <code className="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">ACS_PHONE_NUMBER</code> in your environment.
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-              🎤 Browser Voice Test
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Or test the AI agent directly through your browser microphone.
-            </p>
-            <VoiceInterface
-              onCallStarted={handleCallStarted}
-              onCallEnded={handleCallEnded}
-              onTranscript={handleTranscript}
-              agenda={agenda}
-            />
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-              Call Controls
-            </h2>
-            <CallControls
-              isCallActive={isCallActive}
-              callId={callId}
-            />
           </div>
         </div>
+      </header>
 
-        {/* Right Column - Transcripts and Logs */}
-        <div className="space-y-6">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-              Conversation Transcript
-            </h2>
-            <TranscriptPanel transcripts={transcripts} />
+      <div className="container mx-auto px-4 py-6">
+        {/* Call Status Header */}
+        <CallHeader
+          isCallActive={isCallActive}
+          callId={callId}
+          direction={callDirection}
+          phoneNumber={currentPhoneNumber}
+        />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column - Call Controls */}
+          <div className="space-y-6">
+            {/* Tabs for Inbound/Outbound */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+              <CallTabs
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                disabled={isCallActive}
+              />
+
+              <div className="p-6">
+                {/* Outbound Tab Content */}
+                {activeTab === 'outbound' && (
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      AI agent calls a phone number and follows the agenda below.
+                    </p>
+
+                    {!config?.inbound_phone_number ? (
+                      <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                          ⚠️ No source phone number configured. Set <code className="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">ACS_PHONE_NUMBER</code> in your environment.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex gap-3">
+                          <input
+                            type="tel"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            placeholder="+1 555 123 4567"
+                            disabled={isCallingPhone}
+                            className="flex-1 px-4 py-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white text-lg"
+                          />
+                          {!isCallingPhone ? (
+                            <button
+                              onClick={startPhoneCall}
+                              disabled={!phoneNumber.trim() || isCallActive}
+                              className="px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold rounded-lg shadow transition-all"
+                            >
+                              📞 Call
+                            </button>
+                          ) : (
+                            <button
+                              onClick={hangupPhoneCall}
+                              className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg shadow transition-all"
+                            >
+                              🔴 End
+                            </button>
+                          )}
+                        </div>
+
+                        {phoneCallError && (
+                          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded text-sm">
+                            {phoneCallError}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* Inbound Tab Content */}
+                {activeTab === 'inbound' && (
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Call this number to talk to the AI agent.
+                    </p>
+
+                    {config?.inbound_phone_number ? (
+                      <>
+                        {/* Inbound Phone Number Display */}
+                        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-center">
+                          <p className="text-sm text-blue-600 dark:text-blue-400 mb-1">Call this number:</p>
+                          <p className="text-2xl font-bold text-blue-800 dark:text-blue-200 font-mono">
+                            {config.inbound_phone_number}
+                          </p>
+                        </div>
+
+                        {/* Inbound Agent Type Selector */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Inbound Agent Type
+                          </label>
+                          <select
+                            value={inboundAgentTypeId}
+                            onChange={(e) => handleInboundAgentTypeChange(e.target.value)}
+                            disabled={isCallActive}
+                            className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white disabled:opacity-50"
+                          >
+                            <optgroup label="Built-in">
+                              {agentTypes.filter(t => t.isBuiltIn).map(type => (
+                                <option key={type.id} value={type.id}>
+                                  {type.name}
+                                </option>
+                              ))}
+                            </optgroup>
+                            {agentTypes.some(t => !t.isBuiltIn) && (
+                              <optgroup label="Custom">
+                                {agentTypes.filter(t => !t.isBuiltIn).map(type => (
+                                  <option key={type.id} value={type.id}>
+                                    {type.name}
+                                  </option>
+                                ))}
+                              </optgroup>
+                            )}
+                          </select>
+                        </div>
+
+                        {/* Active Inbound Calls */}
+                        {inboundCalls.length > 0 ? (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Active calls:</p>
+                            {inboundCalls.map(call => (
+                              <div key={call.call_id} className="flex items-center gap-2 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 p-3 rounded-lg">
+                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                <span className="font-mono">{call.phone_number}</span>
+                                <span className="text-xs text-gray-500">({call.status})</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 italic text-center py-4">
+                            📞 Waiting for incoming calls...
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                          ⚠️ No phone number configured. Set <code className="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">ACS_PHONE_NUMBER</code> in your environment.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Agent Configuration */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {activeTab === 'outbound' ? 'Outbound Agent' : 'Agent Configuration'}
+                </h2>
+                {activeTab === 'outbound' && (
+                  <button
+                    onClick={() => setShowAgenda(!showAgenda)}
+                    className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                    disabled={isCallActive}
+                  >
+                    {showAgenda ? 'Collapse' : 'Expand'}
+                  </button>
+                )}
+              </div>
+
+              {activeTab === 'outbound' && (
+                <>
+                  {/* Agent Type Manager */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Agent Type
+                    </label>
+                    <AgentTypeManager
+                      agentTypes={agentTypes}
+                      selectedTypeId={selectedAgentTypeId}
+                      onSelect={handleAgentTypeChange}
+                      onAdd={addAgentType}
+                      onUpdate={updateAgentType}
+                      onDelete={deleteAgentType}
+                      disabled={isCallActive}
+                    />
+                  </div>
+
+                  {showAgenda ? (
+                    <AgendaEditor
+                      content={agenda}
+                      onChange={handleAgendaChange}
+                      disabled={isCallActive}
+                      placeholder="Enter the agenda or instructions for the AI agent..."
+                    />
+                  ) : (
+                    <div
+                      onClick={() => !isCallActive && setShowAgenda(true)}
+                      className={`bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 max-h-32 overflow-y-auto ${!isCallActive ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700' : ''}`}
+                    >
+                      <pre className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap font-mono line-clamp-4">
+                        {agenda}
+                      </pre>
+                      {!isCallActive && (
+                        <p className="text-xs text-blue-500 mt-2">Click to edit</p>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {activeTab === 'inbound' && (
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="mb-2">The inbound agent uses the selected agent type above.</p>
+                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 max-h-40 overflow-y-auto">
+                    <pre className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap font-mono">
+                      {getAgentType(inboundAgentTypeId)?.agenda || 'No agenda configured'}
+                    </pre>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Pricing Info - Collapsed */}
+            <details className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+              <summary className="p-4 cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg">
+                💰 Estimated Costs
+              </summary>
+              <div className="px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                <p>• Azure OpenAI Realtime: ~$0.10/min (input) + ~$0.24/min (output)</p>
+                <p>• Azure Blob Storage: ~$0.02/GB for recordings</p>
+                <p>• Container Apps: Based on usage</p>
+              </div>
+            </details>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-              Call Logs
-            </h2>
-            <CallLogs callId={callId} />
+          {/* Right Column - Conversation & Logs */}
+          <div className="space-y-6">
+            {/* Conversation Panel */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
+                💬 Conversation
+                {isCallActive && (
+                  <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 px-2 py-0.5 rounded-full animate-pulse">
+                    LIVE
+                  </span>
+                )}
+              </h2>
+              <TranscriptPanel
+                transcripts={transcripts}
+                callId={callId}
+                isCallActive={isCallActive}
+              />
+            </div>
+
+            {/* Call Logs */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                📋 Call Logs
+              </h2>
+              <CallLogs callId={callId} />
+            </div>
           </div>
         </div>
       </div>

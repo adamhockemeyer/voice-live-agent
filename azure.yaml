@@ -8,11 +8,13 @@ services:
     project: ./src/api-python
     language: py
     host: containerapp
+    build: remote
 
   ui:
     project: ./src/ui
     language: ts
     host: containerapp
+    build: remote
 
 infra:
   provider: bicep

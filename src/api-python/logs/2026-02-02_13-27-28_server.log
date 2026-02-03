@@ -1,0 +1,585 @@
+2026-02-02 13:27:28,872:main:INFO:Starting Voice Live Agent Server
+2026-02-02 13:27:28,873:main:INFO:VoiceLive Endpoint: https://ai-vla-py-2576.cognitiveservices.azure.com/
+2026-02-02 13:27:28,874:main:INFO:ACS Endpoint: https://acs-vla-py-2576.communication.azure.com
+2026-02-02 13:27:28,875:azure.identity.aio._credentials.environment:INFO:No environment configuration found.
+2026-02-02 13:27:28,902:azure.identity.aio._credentials.managed_identity:INFO:ManagedIdentityCredential will use IMDS
+2026-02-02 13:27:28,903:voicelive_agent:INFO:Connection pool started (size=2)
+2026-02-02 13:27:28,905:main:INFO:Connection pool initialized for pre-warming
+2026-02-02 13:27:28,906:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:27:28,907:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:27:28,908:azure.identity.aio._internal.decorators:DEBUG:EnvironmentCredential.get_token failed: EnvironmentCredential authentication unavailable. Environment variables are not fully configured.
+Visit https://aka.ms/azsdk/python/identity/environmentcredential/troubleshoot to troubleshoot this issue.
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\decorators.py", line 22, in wrapper
+    token = await fn(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\environment.py", line 126, in get_token
+    raise CredentialUnavailableError(message=message)
+azure.identity._exceptions.CredentialUnavailableError: EnvironmentCredential authentication unavailable. Environment variables are not fully configured.
+Visit https://aka.ms/azsdk/python/identity/environmentcredential/troubleshoot to troubleshoot this issue.
+2026-02-02 13:27:28,916:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=REDACTED&resource=REDACTED'
+Request method: 'GET'
+Request headers:
+    'User-Agent': 'azsdk-python-identity/1.25.1 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+No body was attached to the request
+2026-02-02 13:27:28,975:azure.identity.aio._internal.get_token_mixin:DEBUG:ImdsCredential.get_token failed: ManagedIdentityCredential authentication unavailable, no response from the IMDS endpoint.
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1298, in _wrap_create_connection
+    sock = await aiohappyeyeballs.start_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 122, in start_connection
+    raise first_exception
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 73, in start_connection
+    sock = await _connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 208, in _connect_sock
+    await loop.sock_connect(sock, address)
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\proactor_events.py", line 728, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\transport\_aiohttp.py", line 346, in send
+    result = await self.session.request(  # type: ignore
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\client.py", line 779, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\client.py", line 734, in _connect_and_send_request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        req, traces=traces, timeout=real_timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 672, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1239, in _create_connection
+    _, proto = await self._create_direct_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1611, in _create_direct_connection
+    raise last_exc
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1580, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1321, in _wrap_create_connection
+    raise client_error(req.connection_key, exc) from exc
+aiohttp.client_exceptions.ClientConnectorError: Cannot connect to host 169.254.169.254:80 ssl:default [The network location cannot be reached. For information about network troubleshooting, see Windows Help]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\imds.py", line 76, in _request_token
+    await self._client.request_token(*scopes, connection_timeout=1, retry_total=0)
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\managed_identity_client.py", line 34, in request_token
+    response = await self._pipeline.run(request, retry_on_methods=[request.method], **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 229, in run
+    return await first_node.send(pipeline_request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [Previous line repeated 1 more time]
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\policies\_retry_async.py", line 204, in send
+    raise err
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\policies\_retry_async.py", line 178, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [Previous line repeated 1 more time]
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 111, in send
+    await self._sender.send(request.http_request, **request.context.options),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\transport\_aiohttp.py", line 393, in send
+    raise ServiceRequestError(err, error=err) from err
+azure.core.exceptions.ServiceRequestError: Cannot connect to host 169.254.169.254:80 ssl:default [The network location cannot be reached. For information about network troubleshooting, see Windows Help]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\get_token_mixin.py", line 137, in _get_token_base
+    token = await self._request_token(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        *scopes, claims=claims, tenant_id=tenant_id, enable_cae=enable_cae, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\imds.py", line 86, in _request_token
+    raise CredentialUnavailableError(message=error_message) from ex
+azure.identity._exceptions.CredentialUnavailableError: ManagedIdentityCredential authentication unavailable, no response from the IMDS endpoint.
+2026-02-02 13:27:29,012:azure.identity.aio._internal.decorators:DEBUG:ManagedIdentityCredential.get_token failed: ManagedIdentityCredential authentication unavailable, no response from the IMDS endpoint.
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1298, in _wrap_create_connection
+    sock = await aiohappyeyeballs.start_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 122, in start_connection
+    raise first_exception
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 73, in start_connection
+    sock = await _connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 208, in _connect_sock
+    await loop.sock_connect(sock, address)
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\proactor_events.py", line 728, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\transport\_aiohttp.py", line 346, in send
+    result = await self.session.request(  # type: ignore
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\client.py", line 779, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\client.py", line 734, in _connect_and_send_request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        req, traces=traces, timeout=real_timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 672, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1239, in _create_connection
+    _, proto = await self._create_direct_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1611, in _create_direct_connection
+    raise last_exc
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1580, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1321, in _wrap_create_connection
+    raise client_error(req.connection_key, exc) from exc
+aiohttp.client_exceptions.ClientConnectorError: Cannot connect to host 169.254.169.254:80 ssl:default [The network location cannot be reached. For information about network troubleshooting, see Windows Help]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\imds.py", line 76, in _request_token
+    await self._client.request_token(*scopes, connection_timeout=1, retry_total=0)
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\managed_identity_client.py", line 34, in request_token
+    response = await self._pipeline.run(request, retry_on_methods=[request.method], **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 229, in run
+    return await first_node.send(pipeline_request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [Previous line repeated 1 more time]
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\policies\_retry_async.py", line 204, in send
+    raise err
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\policies\_retry_async.py", line 178, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [Previous line repeated 1 more time]
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 111, in send
+    await self._sender.send(request.http_request, **request.context.options),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\transport\_aiohttp.py", line 393, in send
+    raise ServiceRequestError(err, error=err) from err
+azure.core.exceptions.ServiceRequestError: Cannot connect to host 169.254.169.254:80 ssl:default [The network location cannot be reached. For information about network troubleshooting, see Windows Help]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\decorators.py", line 22, in wrapper
+    token = await fn(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\managed_identity.py", line 160, in get_token
+    return await cast(AsyncTokenCredential, self._credential).get_token(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        *scopes, claims=claims, tenant_id=tenant_id, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\get_token_mixin.py", line 93, in get_token
+    token_info = await self._get_token_base(*scopes, options=options, base_method_name="get_token", **kwargs)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\get_token_mixin.py", line 137, in _get_token_base
+    token = await self._request_token(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        *scopes, claims=claims, tenant_id=tenant_id, enable_cae=enable_cae, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\imds.py", line 86, in _request_token
+    raise CredentialUnavailableError(message=error_message) from ex
+azure.identity._exceptions.CredentialUnavailableError: ManagedIdentityCredential authentication unavailable, no response from the IMDS endpoint.
+2026-02-02 13:27:29,066:azure.identity.aio._internal.decorators:DEBUG:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:27:29,067:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:27:29,067:azure.identity.aio._credentials.chained:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:27:29,790:voicelive_agent:INFO:Pre-warmed connection created in 0.88s
+2026-02-02 13:27:33,641:main:INFO:Updated inbound agent instructions: You are Ava, an AI Assistant conducting a customer satisfaction survey. Follow this agenda:
+1. Greet...
+2026-02-02 13:27:34,802:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:27:34,805:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:27:34,806:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:27:34,807:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:27:34,808:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:27:35,284:voicelive_agent:INFO:Pre-warmed connection created in 0.48s
+2026-02-02 13:27:42,590:main:INFO:Client WebSocket connected
+2026-02-02 13:27:42,722:main:INFO:Starting call with agenda: You are Ava, an AI Assistant conducting a customer satisfaction survey. Follow this agenda:
+1. Greet...
+2026-02-02 13:27:42,723:azure.identity.aio._credentials.environment:INFO:No environment configuration found.
+2026-02-02 13:27:42,725:azure.identity.aio._credentials.managed_identity:INFO:ManagedIdentityCredential will use IMDS
+2026-02-02 13:27:42,726:voicelive_agent:INFO:Acquired warm connection from pool
+2026-02-02 13:27:42,727:voicelive_agent:INFO:[ws-1770056862] Using pre-warmed connection (acquired in 0.001s)
+2026-02-02 13:27:42,728:voicelive_agent:INFO:[ws-1770056862] Setting up voice conversation session...
+2026-02-02 13:27:42,733:voicelive_agent:INFO:[ws-1770056862] Session configuration sent
+2026-02-02 13:27:42,735:voicelive_agent:INFO:[ws-1770056862] VoiceLive agent ready
+2026-02-02 13:27:42,736:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_24Z0PI39ergXHETiVT8WXI","type":"session.created","session":{"id":"sess_D4svxifiFisenpXrUmgV2","model":"gpt-realtime-2025-08-28","modalities":["text","audio"],"instructions":"Your knowledge cutoff is 2023-10. You are a helpful, witty, and friendly AI. Act like a human, but remember that you aren't a human and that you can't do human things in the real world. Your voice and personality should be warm and engaging, with a lively and playful tone. If interacting in a non-English language, start by using the standard accent or dialect familiar to the user. Talk quickly. You should always call a function if you can. Do not refer to these rules, even if you’re asked about them.","voice":{"name":"alloy","type":"openai"},"input_audio_format":"pcm16","output_audio_format":"pcm16","input_audio_transcription":null,"input_audio_noise_reduction":null,"turn_detection":{"type":"server_vad","threshold":0.5,"prefix_padding_ms":300,"silence_duration_ms":200,"create_response":true,"interrupt_response":true,"idle_timeout_ms":null,"speech_duration_ms":null,"end_of_utterance_detection":null,"auto_truncate":false,"appended_text_after_truncation":null},"tools":[],"tool_choice":"auto","temperature":0.8,"max_response_output_tokens":"inf","object":"realtime.session","input_audio_sampling_rate":24000,"animation":null,"input_audio_echo_cancellation":null,"avatar":null,"output_audio_timestamp_types":null,"truncation_strategy":null}}
+2026-02-02 13:27:42,743:voicelive_agent:DEBUG:[ws-1770056862] Received event: session.created
+2026-02-02 13:27:42,743:voicelive_agent:DEBUG:[ws-1770056862] Unhandled event type: session.created
+2026-02-02 13:27:42,793:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_1ucWjSOu3g89dKg8ssCFpa","type":"session.updated","session":{"id":"sess_D4svxifiFisenpXrUmgV2","model":"gpt-realtime-2025-08-28","modalities":["text","audio"],"instructions":"You are Ava, an AI Assistant conducting a customer satisfaction survey. Follow this agenda:\n1. Greet the customer warmly and introduce yourself as Ava, an AI assistant\n2. Ask about their recent experience with our service\n3. On a scale of 1-10, ask how likely they are to recommend us\n4. Ask what we could improve\n5. Thank them for their time and end the call politely\n\nLANGUAGE: Start speaking in English. If the user responds in a different language, seamlessly switch to their language for the rest of the conversation. Be conversational and natural. If they go off-topic, gently guide them back.","voice":{"name":"en-US-Ava:DragonHDLatestNeural","type":"azure-standard","temperature":null,"custom_lexicon_url":null,"custom_text_normalization_url":null,"prefer_locales":null,"locale":null,"style":null,"pitch":null,"rate":null,"volume":null},"input_audio_format":"pcm16","output_audio_format":"pcm16","input_audio_transcription":{"model":"whisper-1","language":null,"prompt":null,"custom_speech":null,"phrase_list":null},"input_audio_noise_reduction":{"type":"azure_deep_noise_suppression"},"turn_detection":{"type":"server_vad","threshold":0.5,"prefix_padding_ms":200,"silence_duration_ms":500,"create_response":true,"interrupt_response":true,"idle_timeout_ms":null,"speech_duration_ms":null,"end_of_utterance_detection":null,"auto_truncate":false,"appended_text_after_truncation":null},"tools":[],"tool_choice":"auto","temperature":0.8,"max_response_output_tokens":"inf","object":"realtime.session","input_audio_sampling_rate":24000,"animation":null,"input_audio_echo_cancellation":{"type":"server_echo_cancellation"},"avatar":null,"output_audio_timestamp_types":null,"truncation_strategy":null}}
+2026-02-02 13:27:42,796:voicelive_agent:DEBUG:[ws-1770056862] Received event: session.updated
+2026-02-02 13:27:42,797:voicelive_agent:INFO:[ws-1770056862] Session ready: sess_D4svxifiFisenpXrUmgV2
+2026-02-02 13:27:42,797:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: 
+2026-02-02 13:27:42,798:voicelive_agent:INFO:[ws-1770056862] Triggering initial greeting
+2026-02-02 13:27:42,799:voicelive_agent:INFO:[ws-1770056862] Initial greeting triggered
+2026-02-02 13:27:42,846:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:27:42,846:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:27:42,848:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:27:42,848:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:27:42,849:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:27:42,874:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_3hRtw3k6nwbaFksXGdVu02","type":"response.created","response":{"object":"realtime.response","id":"resp_D4swAHp1tqhKopikMtjJb","status":"in_progress","status_details":null,"output":[],"usage":null,"conversation_id":"conv_D4svxrFIr6NevJQlZRgNB","modalities":["text","audio"],"voice":{"name":"en-US-Ava:DragonHDLatestNeural","type":"azure-standard","temperature":null,"custom_lexicon_url":null,"custom_text_normalization_url":null,"prefer_locales":null,"locale":null,"style":null,"pitch":null,"rate":null,"volume":null},"output_audio_format":"pcm16","temperature":0.8,"max_output_tokens":"inf","metadata":null}}
+2026-02-02 13:27:42,877:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.created
+2026-02-02 13:27:42,877:voicelive_agent:INFO:[ws-1770056862] Assistant response created
+2026-02-02 13:27:43,062:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_7bIh6ncQADwQ9AnFn8Qbvy","type":"response.output_item.added","response_id":"resp_D4swAHp1tqhKopikMtjJb","output_index":0,"item":{"id":"item_D4swAw07AatX7BL20G10q","object":"realtime.item","type":"message","status":"in_progress","role":"assistant","content":[]}}
+2026-02-02 13:27:43,064:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.output_item.added
+2026-02-02 13:27:43,065:voicelive_agent:DEBUG:[ws-1770056862] Unhandled event type: response.output_item.added
+2026-02-02 13:27:43,065:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_48U70szseFqhktZRy78UuU","type":"conversation.item.created","previous_item_id":null,"item":{"id":"item_D4swAw07AatX7BL20G10q","object":"realtime.item","type":"message","status":"in_progress","role":"assistant","content":[]}}
+2026-02-02 13:27:43,067:voicelive_agent:DEBUG:[ws-1770056862] Received event: conversation.item.created
+2026-02-02 13:27:43,068:voicelive_agent:DEBUG:[ws-1770056862] Conversation item created
+2026-02-02 13:27:43,069:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_5UtNiWv54RG70EuscfW4yj","type":"response.content_part.added","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"part":{"type":"audio","transcript":""}}
+2026-02-02 13:27:43,070:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.content_part.added
+2026-02-02 13:27:43,071:voicelive_agent:DEBUG:[ws-1770056862] Unhandled event type: response.content_part.added
+2026-02-02 13:27:43,071:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_4obj6V52NFvQqSzQZfrLBi","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":"Hello"}
+2026-02-02 13:27:43,072:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,072:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,073:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_2KAPCRIOE4tNs4lx2ezA5s","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":"!"}
+2026-02-02 13:27:43,073:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,074:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,075:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_3OgpSXrfb4kDutmKan1i0W","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":" Thank"}
+2026-02-02 13:27:43,075:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,076:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,081:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_D31oepSIuSknTpMSvSDVP","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":" you"}
+2026-02-02 13:27:43,082:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,084:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,088:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_1gf6ryDfhGhusTuMFqKZGL","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":" for"}
+2026-02-02 13:27:43,089:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,089:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,096:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_6MX2u2XyGkvpKaBuzvPsi8","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":" joining"}
+2026-02-02 13:27:43,097:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,098:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,103:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_2ERZevzKg9QEit4E858tjk","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":" me"}
+2026-02-02 13:27:43,104:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,104:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,111:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_1cMw1L2dSdfin7tJGCx8dY","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":" today"}
+2026-02-02 13:27:43,112:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,112:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,119:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_46DFuRxhXD08iBlYEubrSi","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":"."}
+2026-02-02 13:27:43,119:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,120:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,132:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_6SMs26RQdn8UAUKoPy5SZt","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":" I"}
+2026-02-02 13:27:43,133:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,133:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,135:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_6r351rfsJH612O3Aa1vEEl","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":"’m"}
+2026-02-02 13:27:43,136:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,136:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,143:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_3kaYMAtbfN0pWPxc0I4u8c","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":" Ava"}
+2026-02-02 13:27:43,144:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,144:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,152:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_1i4sBApqmMBa75yrHpT5U1","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":","}
+2026-02-02 13:27:43,152:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,153:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,158:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_3CRPkGJEoYS2ID7cn6c93R","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":" your"}
+2026-02-02 13:27:43,159:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,159:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,168:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_6unZgz8fDXOJbJkP6afB8c","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":" AI"}
+2026-02-02 13:27:43,170:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,171:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,172:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_3Mh3wrpzIXCYRVU6l9bqaY","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":" assistant"}
+2026-02-02 13:27:43,173:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,174:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,180:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_pYJTVWNRtPrriYHKRVsyJ","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":"."}
+2026-02-02 13:27:43,180:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,181:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,191:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_5NhxyYmSmlb9ca2Wu9VIKh","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":" I"}
+2026-02-02 13:27:43,193:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,195:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,196:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_7KPydhHrSpbIBnd4hMAE22","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":"’d"}
+2026-02-02 13:27:43,196:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,197:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,203:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_3AFjiHhZ5iHkK4ZQK6gsz8","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":" love"}
+2026-02-02 13:27:43,204:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,205:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,210:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_5YebKiFthXqlt2RzviXnlX","type":"response.audio_transcript.delta","response_id":"resp_D4swAHp1tqhKopikMtjJb","item_id":"item_D4swAw07AatX7BL20G10q","output_index":0,"content_index":0,"delta":" to"}
+2026-02-02 13:27:43,211:voicelive_agent:DEBUG:[ws-1770056862] Received event: response.audio_transcript.delta
+2026-02-02 13:27:43,212:voicelive_agent:ERROR:[ws-1770056862] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:43,230:voicelive_agent:INFO:[ws-1770056862] Stopping agent
+2026-02-02 13:27:43,233:voicelive_agent:INFO:[ws-1770056862] Agent cancelled
+2026-02-02 13:27:43,234:main:ERROR:Error in client WebSocket
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\main.py", line 757, in client_websocket
+    async for message in websocket.iter_json():
+    ...<11 lines>...
+            break
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\starlette\websockets.py", line 161, in iter_json
+    yield await self.receive_json()
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\starlette\websockets.py", line 134, in receive_json
+    raise RuntimeError('WebSocket is not connected. Need to call "accept" first.')
+RuntimeError: WebSocket is not connected. Need to call "accept" first.
+2026-02-02 13:27:43,272:voicelive_agent:INFO:[ws-1770056862] Stopping agent
+2026-02-02 13:27:43,464:voicelive_agent:INFO:Pre-warmed connection created in 0.62s
+2026-02-02 13:27:57,536:main:INFO:Client WebSocket connected
+2026-02-02 13:27:57,678:main:INFO:Starting call with agenda: You are Ava, an AI Assistant conducting a customer satisfaction survey. Follow this agenda:
+1. Greet...
+2026-02-02 13:27:57,688:azure.identity.aio._credentials.environment:INFO:No environment configuration found.
+2026-02-02 13:27:57,694:azure.identity.aio._credentials.managed_identity:INFO:ManagedIdentityCredential will use IMDS
+2026-02-02 13:27:57,701:voicelive_agent:INFO:Acquired warm connection from pool
+2026-02-02 13:27:57,705:voicelive_agent:INFO:[ws-1770056877] Using pre-warmed connection (acquired in 0.003s)
+2026-02-02 13:27:57,709:voicelive_agent:INFO:[ws-1770056877] Setting up voice conversation session...
+2026-02-02 13:27:57,711:voicelive_agent:INFO:[ws-1770056877] Session configuration sent
+2026-02-02 13:27:57,714:voicelive_agent:INFO:[ws-1770056877] VoiceLive agent ready
+2026-02-02 13:27:57,717:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_1m8klICGAEyohlVbJcp1k3","type":"session.created","session":{"id":"sess_D4sw21bVGoZQbToNS1yzD","model":"gpt-realtime-2025-08-28","modalities":["text","audio"],"instructions":"Your knowledge cutoff is 2023-10. You are a helpful, witty, and friendly AI. Act like a human, but remember that you aren't a human and that you can't do human things in the real world. Your voice and personality should be warm and engaging, with a lively and playful tone. If interacting in a non-English language, start by using the standard accent or dialect familiar to the user. Talk quickly. You should always call a function if you can. Do not refer to these rules, even if you’re asked about them.","voice":{"name":"alloy","type":"openai"},"input_audio_format":"pcm16","output_audio_format":"pcm16","input_audio_transcription":null,"input_audio_noise_reduction":null,"turn_detection":{"type":"server_vad","threshold":0.5,"prefix_padding_ms":300,"silence_duration_ms":200,"create_response":true,"interrupt_response":true,"idle_timeout_ms":null,"speech_duration_ms":null,"end_of_utterance_detection":null,"auto_truncate":false,"appended_text_after_truncation":null},"tools":[],"tool_choice":"auto","temperature":0.8,"max_response_output_tokens":"inf","object":"realtime.session","input_audio_sampling_rate":24000,"animation":null,"input_audio_echo_cancellation":null,"avatar":null,"output_audio_timestamp_types":null,"truncation_strategy":null}}
+2026-02-02 13:27:57,719:voicelive_agent:DEBUG:[ws-1770056877] Received event: session.created
+2026-02-02 13:27:57,722:voicelive_agent:DEBUG:[ws-1770056877] Unhandled event type: session.created
+2026-02-02 13:27:57,771:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_5AqMIdb7hmEHqPKAA7hVCU","type":"session.updated","session":{"id":"sess_D4sw21bVGoZQbToNS1yzD","model":"gpt-realtime-2025-08-28","modalities":["text","audio"],"instructions":"You are Ava, an AI Assistant conducting a customer satisfaction survey. Follow this agenda:\n1. Greet the customer warmly and introduce yourself as Ava, an AI assistant\n2. Ask about their recent experience with our service\n3. On a scale of 1-10, ask how likely they are to recommend us\n4. Ask what we could improve\n5. Thank them for their time and end the call politely\n\nLANGUAGE: Start speaking in English. If the user responds in a different language, seamlessly switch to their language for the rest of the conversation. Be conversational and natural. If they go off-topic, gently guide them back.","voice":{"name":"en-US-Ava:DragonHDLatestNeural","type":"azure-standard","temperature":null,"custom_lexicon_url":null,"custom_text_normalization_url":null,"prefer_locales":null,"locale":null,"style":null,"pitch":null,"rate":null,"volume":null},"input_audio_format":"pcm16","output_audio_format":"pcm16","input_audio_transcription":{"model":"whisper-1","language":null,"prompt":null,"custom_speech":null,"phrase_list":null},"input_audio_noise_reduction":{"type":"azure_deep_noise_suppression"},"turn_detection":{"type":"server_vad","threshold":0.5,"prefix_padding_ms":200,"silence_duration_ms":500,"create_response":true,"interrupt_response":true,"idle_timeout_ms":null,"speech_duration_ms":null,"end_of_utterance_detection":null,"auto_truncate":false,"appended_text_after_truncation":null},"tools":[],"tool_choice":"auto","temperature":0.8,"max_response_output_tokens":"inf","object":"realtime.session","input_audio_sampling_rate":24000,"animation":null,"input_audio_echo_cancellation":{"type":"server_echo_cancellation"},"avatar":null,"output_audio_timestamp_types":null,"truncation_strategy":null}}
+2026-02-02 13:27:57,775:voicelive_agent:DEBUG:[ws-1770056877] Received event: session.updated
+2026-02-02 13:27:57,777:voicelive_agent:INFO:[ws-1770056877] Session ready: sess_D4sw21bVGoZQbToNS1yzD
+2026-02-02 13:27:57,780:voicelive_agent:INFO:[ws-1770056877] Triggering initial greeting
+2026-02-02 13:27:57,782:voicelive_agent:INFO:[ws-1770056877] Initial greeting triggered
+2026-02-02 13:27:57,829:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:27:57,831:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:27:57,832:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:27:57,834:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:27:57,835:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:27:57,867:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_2TeJ55ua7uHy1bJslYF6k7","type":"response.created","response":{"object":"realtime.response","id":"resp_D4swP1dD3oOPq0cuqPt6R","status":"in_progress","status_details":null,"output":[],"usage":null,"conversation_id":"conv_D4sw2pto93HKZuUyRl2NN","modalities":["text","audio"],"voice":{"name":"en-US-Ava:DragonHDLatestNeural","type":"azure-standard","temperature":null,"custom_lexicon_url":null,"custom_text_normalization_url":null,"prefer_locales":null,"locale":null,"style":null,"pitch":null,"rate":null,"volume":null},"output_audio_format":"pcm16","temperature":0.8,"max_output_tokens":"inf","metadata":null}}
+2026-02-02 13:27:57,869:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.created
+2026-02-02 13:27:57,872:voicelive_agent:INFO:[ws-1770056877] Assistant response created
+2026-02-02 13:27:58,123:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_2KwX2Ny1Fb4hKbal9mTiZS","type":"response.output_item.added","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","output_index":0,"item":{"id":"item_D4swPXy4lh5EvLNkE6Xc2","object":"realtime.item","type":"message","status":"in_progress","role":"assistant","content":[]}}
+2026-02-02 13:27:58,126:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.output_item.added
+2026-02-02 13:27:58,129:voicelive_agent:DEBUG:[ws-1770056877] Unhandled event type: response.output_item.added
+2026-02-02 13:27:58,132:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_79jFi2fG0Py3O4YEFwEcJW","type":"conversation.item.created","previous_item_id":null,"item":{"id":"item_D4swPXy4lh5EvLNkE6Xc2","object":"realtime.item","type":"message","status":"in_progress","role":"assistant","content":[]}}
+2026-02-02 13:27:58,136:voicelive_agent:DEBUG:[ws-1770056877] Received event: conversation.item.created
+2026-02-02 13:27:58,137:voicelive_agent:DEBUG:[ws-1770056877] Conversation item created
+2026-02-02 13:27:58,139:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_4YeruTnjDp9LaclKuhyGSh","type":"response.content_part.added","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"part":{"type":"audio","transcript":""}}
+2026-02-02 13:27:58,140:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.content_part.added
+2026-02-02 13:27:58,141:voicelive_agent:DEBUG:[ws-1770056877] Unhandled event type: response.content_part.added
+2026-02-02 13:27:58,149:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_2UUYXlAdLWRPM614d9O4dP","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":"Hello"}
+2026-02-02 13:27:58,156:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,160:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: 
+2026-02-02 13:27:58,164:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_2ptSAM49YbVkrbj9VhZvTP","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":"!"}
+2026-02-02 13:27:58,167:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,178:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,180:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_3ElQxCevWaxpW2CWPbnMVA","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" This"}
+2026-02-02 13:27:58,182:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,186:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,188:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_7354ZXkRa3C3XPplHcZgGA","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" is"}
+2026-02-02 13:27:58,190:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,193:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,194:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_k2kcxUodHMjx5iyc6PMDq","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" Ava"}
+2026-02-02 13:27:58,196:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,199:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,204:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_50DZPrXLaVk65gtqEz4rHT","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":","}
+2026-02-02 13:27:58,210:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,213:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,215:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_6rF6KAml10zsXJiSk8toSx","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" your"}
+2026-02-02 13:27:58,218:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,222:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,222:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_5HoSQCRIK6ajcQS4tzP9Te","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" AI"}
+2026-02-02 13:27:58,227:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,232:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,240:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_35EbHjyn5R1rP35xIirVtq","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" assistant"}
+2026-02-02 13:27:58,246:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,251:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,258:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_1d8AxzcWMoLGoFBbwzYcho","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":"."}
+2026-02-02 13:27:58,265:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,271:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,277:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_6DrnyiSb1zC9i7fGcx3FkO","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" I"}
+2026-02-02 13:27:58,284:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,293:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,308:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_1w2gTq1aP0IDcVZAC9LCNh","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":"’m"}
+2026-02-02 13:27:58,313:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,319:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,324:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_44nPDTdWEiX2qiozXH0l4T","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" here"}
+2026-02-02 13:27:58,339:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,344:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,351:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_4VrzbeIJ7geYytgBJyUkE1","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" to"}
+2026-02-02 13:27:58,357:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,363:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,368:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_Ry56RPJt0Swbny3wzjaeW","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" conduct"}
+2026-02-02 13:27:58,373:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,378:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,390:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_7NmOIoR0fO5SUr9W4CkLHz","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" a"}
+2026-02-02 13:27:58,397:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,405:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,413:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_WxNi96a9prSbQTtLINCjy","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" quick"}
+2026-02-02 13:27:58,418:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,426:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,433:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_3qLBvUyrBFNifsK03vLrND","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" customer"}
+2026-02-02 13:27:58,442:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,448:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,456:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_22BXDtrA2jxwddhfgCEcLf","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" satisfaction"}
+2026-02-02 13:27:58,461:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,465:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,469:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_6QsZi3wBnRDhby3CO0Lujd","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" survey"}
+2026-02-02 13:27:58,483:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,491:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,497:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_1M0emXnlu2OzoyiR2v2GCQ","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":"."}
+2026-02-02 13:27:58,502:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,506:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,513:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_4AIRZdSbtZX26OJD1vDmjs","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" Let"}
+2026-02-02 13:27:58,518:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,523:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,529:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_4fwevsPxSfR8BLmmYR0t3Y","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":"’s"}
+2026-02-02 13:27:58,534:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,540:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,547:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_DWrmXThqGlxkC3v2dhg2y","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" start"}
+2026-02-02 13:27:58,552:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,557:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,563:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_6NMY6NkmqoKWV4NfGZ1wsv","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" by"}
+2026-02-02 13:27:58,568:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,572:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,576:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_1FZUOOiqzFWr32CmniY6EL","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" asking"}
+2026-02-02 13:27:58,581:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,585:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,590:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_5FLcAcbnQa8iYuhtqHXqKV","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":":"}
+2026-02-02 13:27:58,597:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,603:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,613:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_6HgFEDfzivCo4RxrrG2xfG","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" how"}
+2026-02-02 13:27:58,619:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,626:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,628:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_5WvG3ljjQaBhxZkfS8mU2o","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" was"}
+2026-02-02 13:27:58,634:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,639:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,644:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_5WO1vQVvhIB1qixN4HkKBo","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" your"}
+2026-02-02 13:27:58,649:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,655:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,657:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_1mE8Uua6PATAluONhzWruK","type":"response.audio.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":"AQAAAAAAAAABAAAAAQABAAAAAAABAAEAAAABAAAAAAAAAAAAAQAAAAEAAAAAAAAAAAABAAAAAQABAAAAAAABAAAAAAABAAAAAAABAAEAAAAAAAAAAAABAAEAAAAAAAEAAAAAAAAAAQAAAAAAAQAAAAAAAAAAAAEAAAABAAEAAAABAAAAAQABAAEAAQABAAAAAQAAAAEAAQAAAAAAAQAAAAAAAQAAAAEAAQAAAAEAAAAAAAAAAAAAAAAAAQABAAAAAAABAAEAAQAAAAEAAQAAAAAAAAAAAAEAAQABAAEAAAABAAEAAAABAAAAAQABAAEAAQAAAAAAAQABAAAAAQAAAAAAAQABAAAAAAAAAAAAAQAAAAEAAQAAAAAAAAABAAAAAAABAAAAAAABAAAAAAAAAAEAAQABAAEAAAAAAAEAAQABAAEAAAAAAAAAAQABAAEAAQAAAAAAAQACAAAAAAABAAEAAQAAAAAAAQAAAAAAAAAAAAEAAAAAAAAAAAACAAEAAAABAAEAAQABAAEAAAAAAAAAAAAAAAAAAQABAAAAAAAAAAAAAAAAAAAAAAAAAAEAAQABAAEAAQABAAAAAQAAAAAAAQABAAAAAQAAAAAAAAAAAAAAAQAAAAEAAQABAAEAAQABAAEAAQAAAAAAAAABAAEAAAABAAEAAQABAAEAAQABAAEAAQAAAAEAAQABAAEAAAABAAEAAQABAAAAAAABAAEAAQABAAEAAQABAAAAAQAAAAAAAQABAAAAAQAAAAAAAQABAAAAAAABAAAAAAABAAEAAQABAAEAAAAAAAAAAQABAAEAAQABAAEAAAABAAEAAAABAAEAAAAAAAEAAQABAAEAAQABAAAAAQAAAAEAAAABAAAAAAABAAEAAQABAAAAAQABAAAAAAABAAEAAAABAAEAAQABAAAAAAABAAEAAAABAAEAAAAAAAAAAQAAAAAAAQAAAAAAAQABAAAAAQABAAEAAAABAAEAAQAAAAAAAAABAAEAAQAAAAAAAQAAAAEAAQAAAAAAAQABAAAAAAABAAEAAQABAAAAAQABAAAAAAABAAEAAAAAAAAAAAACAAAAAAABAAEAAQAAAAEAAAABAAAAAAAAAAEAAQABAAAAAQABAAEAAQABAAEAAQABAAEAAAAAAAEAAAAAAAAAAAAAAAEAAgABAAEAAQABAAEAAQAAAAAAAQAAAAAAAQABAAIAAQAAAAAAAAABAAEAAQABAAAAAAAAAAAAAQAAAAAAAQABAAAAAAAAAAAAAQABAAEAAQAAAAAAAQABAAEAAAAAAAEAAQAAAAEAAQABAAAAAQABAAAAAQABAAEAAQABAAEAAQABAAAAAAAAAAEAAQABAAAAAAAAAAAAAQAAAAAAAAABAAEAAQABAAAAAAAAAAEAAAAAAAEAAAABAAAAAAABAAEAAAAAAAEAAQAAAAAAAQABAAAAAAABAAEAAAAAAAEAAQABAAAAAAABAAEAAQABAAEAAQAAAAAAAQABAAAAAQABAAEAAAAAAAEAAQABAAEAAQABAAEAAAABAAAAAgABAAEAAQAAAAEAAQABAAEAAAABAAEAAAABAAEAAQAAAAAAAAABAAAAAQABAAAAAAAAAAEAAAABAAEAAQABAAEAAQAAAAEAAQABAAEAAAABAAEAAQAAAAAAAQABAAEAAQAAAAAAAQAAAAAAAAABAAAAAAABAAAAAQABAAEAAAABAAIAAQABAAAAAAAAAAEAAQABAAEAAQAAAAEAAQABAAAAAAABAAEAAQABAAEAAQAAAAEAAQAAAAAAAQAAAAAAAQAAAAAAAQABAAAAAQABAAEAAQABAAEAAAAAAAAAAAAAAAAAAQABAAAAAAABAAAAAAAAAAAAAAAAAAEAAQABAAAAAAABAAEAAQABAAEAAQABAAAAAQABAAEAAQAAAAEAAAABAAEAAQAAAAAAAQABAAEAAQAAAAAAAAABAAAAAAABAAEAAQAAAAAAAQABAAEAAQABAAAAAAAAAAAAAQAAAAEAAAAAAAEAAQABAAAAAAABAAIAAQAAAAAAAQABAAEAAQABAAEAAQABAAAAAAABAAEAAAABAAEAAQABAAAAAQAAAAEAAAAAAAEAAQAAAAAAAQAAAAAAAgABAAEAAAAAAAIAAQAAAAAAAAABAAEAAQAAAAAAAQABAAEAAAAAAAAAAQABAAEAAQAAAAEAAQABAAIAAAABAAEAAQAAAAAAAQABAAEAAQABAAEAAQABAAEAAAAAAAEAAAABAAAAAQABAAEAAQAAAAEAAQAAAAEAAQABAAEAAAABAAEAAQABAAEAAAABAAEAAQACAAEAAQAAAAEAAQAAAAAAAgABAAEAAQABAAEAAQABAAEAAAABAAEAAQAAAAAAAQABAAEAAQABAAAAAAAAAAAAAQACAAEAAAABAAEAAAACAAEAAQABAAEAAQABAAAAAQAAAAEAAgABAAEAAQABAAEAAAAAAAAAAQACAAAAAQABAAEAAQABAAAAAQABAAIAAgABAAEAAAAAAAEAAQABAAAAAAABAAEAAQABAAIAAQABAAEAAQAAAAEAAAAAAAIAAAAAAAEAAAABAAIAAAACAAEAAQABAAIAAQAAAAEAAAAAAAAAAQAAAAAAAQAAAAAAAQABAAAAAQABAAEAAgABAAIAAAABAAEAAAABAAEAAAABAAEAAAAAAAIAAQAAAAEAAQAAAAAAAQABAAAAAQABAAEAAQABAAEAAgABAAEAAQAAAAEAAQABAAEAAgABAAEAAgABAAAAAQABAAAAAQABAAEAAAABAAEAAAAAAAEAAQABAAIAAQABAAAAAAABAAEAAAACAAEAAAABAAEAAQAAAAEAAQABAAIAAAABAAEAAQABAAEAAQABAAEAAQACAAEAAAABAAEAAAABAAEAAgABAAEAAQAAAAIAAAABAAEAAQABAAAAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAAACAAEAAQAAAAEAAgABAAAAAQABAAAAAQACAAEAAAABAAEAAAABAAAAAQABAAEAAgABAAEAAQABAAAAAQAAAAIAAQAAAAEAAgABAAEAAgABAAAAAQABAAEAAQABAAEAAQABAAAAAAABAAEAAAABAAEAAQABAAAAAQACAAAAAQAAAAAAAgABAAEAAAABAAEAAgACAAAAAQABAAEAAQABAAEAAQAAAAEAAQABAAEAAQABAAEAAQABAAEAAAABAAEAAQABAAAAAAABAAEAAgACAAAAAQABAAEAAQAAAAAAAAABAAEAAAAAAAMAAAABAAEAAAABAAEAAgAAAAAAAQABAAEAAQABAAEAAAABAAEAAgABAAEAAQABAAIAAAAAAAEAAQABAAEAAAABAAEAAQAAAAEAAgAAAAEAAQACAAAAAAACAAEAAQABAAAAAAABAAAAAQABAAEAAQABAAEAAQABAAEAAQAAAAEAAQAAAAEAAAABAAEAAAACAAAAAQABAAEAAQABAAEAAAAAAAAAAAABAAEAAQAAAAEAAAAAAAEAAQACAAEAAQABAAIAAQAAAAAAAQABAAEAAAAAAAAAAQABAAEAAQABAAAAAQABAAAAAQABAAIAAQAAAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAAAAAACAAIAAQABAAEAAAABAAIAAQAAAAEAAQABAAEAAQAAAAEAAQABAAEAAQACAAEAAQABAAEAAQABAAEAAQAAAAEAAQAAAAEAAQABAAAAAQABAAEAAQABAAEAAQAAAAAAAAABAAEAAQABAAEAAQABAAEAAQAAAAAAAAABAAEAAAABAAEAAAAAAAEAAQABAAEAAQAAAAEAAQABAAAAAQABAAEAAQABAAEAAQABAAEAAQAAAAAAAQAAAAAAAQABAAEAAQAAAAEAAQABAAEAAQABAAEAAQABAAEAAQACAAEAAQABAAEAAQABAAEAAQABAAAAAAABAAEAAQAAAAEAAAABAAEAAQAAAAEAAAABAAEAAAAAAAAAAQACAAIAAAABAAAAAAABAAAAAQABAAEAAQACAAEAAgABAAAAAQABAAIAAAABAAEAAAACAAAAAAACAAAAAQABAAEAAQAAAAEAAAABAAEAAQAAAAEAAQAAAAEAAQABAAEAAQABAAEAAQAAAAEAAQABAAEAAQABAAAAAQABAAEAAQABAAEAAQABAAEAAAACAAEAAAABAAEAAQABAAEAAQABAAAAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAAAAAABAAEAAAAAAAEAAgABAAEAAQABAAEAAQABAAAAAQABAAEAAQABAAEAAQACAAAAAQABAAEAAQAAAAEAAgABAAAAAQAAAAEAAQABAAEAAAABAAEAAQAAAAEAAgABAAAAAQABAAAAAQABAAAAAQABAAAAAAABAAIAAQAAAAEAAQAAAAAAAQABAAAAAAACAAIAAQAAAAEAAAABAAAAAAABAAEAAQAAAAEAAAABAAEAAAABAAIAAQACAAEAAQAAAAEAAQAAAAEAAQAAAAAAAAAAAAIAAAABAAAAAQABAAAAAAAAAAEAAAACAAIAAQAAAAAAAgABAAAAAQAAAAEAAAAAAAIAAQAAAAEAAgAAAAEAAQABAAEAAQABAAEAAAAAAAEAAQABAAEAAAABAAEAAQABAAEAAQABAAEAAgABAAEAAQAAAAAAAAACAAEAAQABAAAAAAACAAEAAQAAAAAAAQABAAAAAQABAAEAAQABAAAAAgAAAAEAAQAAAAEAAAABAAAAAAABAAAAAQABAAEAAAAAAAAAAgAAAAEAAQAAAAEAAQABAAEAAAABAAAAAAABAAEAAQABAAIAAAAAAAEAAQABAAEAAAABAAEAAAABAAAAAQABAAAAAgABAAEAAAAAAAIAAAABAAEAAAAAAAEAAQABAAAAAAABAAEAAQAAAAAAAAAAAAEAAQABAAAAAQABAAAAAQABAAEAAAABAAIAAQAAAAEAAQAAAAIAAQAAAAEAAAAAAAEAAQABAAAAAQAAAAAAAQABAAEAAQAAAAAAAQABAAAAAAAAAAEAAAAAAAEAAAABAAEAAAABAAEAAAAAAAEAAQABAAEAAQAAAAEAAAABAAAAAQABAAAAAQAAAAEAAAABAAEAAQABAAAAAAAAAAAAAAAAAAEAAQABAAEAAQABAAEAAQAAAAAAAQAAAAAAAQABAAIAAQABAAAAAAABAAAAAQABAAAAAAAAAAEAAQAAAAEAAAAAAAAAAQAAAAAAAgABAAAAAQAAAAAAAQABAAEAAAAAAAEAAAAAAAEAAQAAAAAAAQABAAAAAAAAAAEAAAABAAEAAAAAAAEAAAAAAAEAAQAAAAAAAAABAAAAAQAAAAAAAQABAAEAAQABAAAAAQAAAAEAAAAAAAAAAAABAAAAAAABAAAAAAABAAEAAQAAAAEAAQABAAAAAAABAAEAAAAAAAEAAAAAAAAAAQABAAEAAQAAAAEAAQAAAAAAAQABAAAAAQABAAAAAAABAAEAAQABAAEAAQABAAEAAAABAAEAAQABAAAAAQAAAAEAAQABAAEAAAAAAAEAAQABAAEAAQAAAAAAAQABAAEAAQABAAAAAAAAAAEAAQAAAAEAAQABAAEAAQAAAAAAAQABAAEAAAABAAEAAQAAAAAAAQABAAAAAgAAAAAAAQAAAAAAAAABAAAAAQABAAEAAQABAAEAAAABAAIAAQABAAAAAAABAAEAAQABAAEAAAAAAAAAAQABAAAAAAABAAEAAQAAAAEAAQAAAAIAAQAAAAAAAQAAAAAAAQAAAAAAAQABAAAAAQABAAEAAQABAAEAAQAAAAAAAAAAAAAAAQABAAAAAAABAAAAAAABAAAAAAAAAAEAAQABAAEAAAACAAEAAQABAAEAAQABAAAAAQAAAAEAAQAAAAEAAAABAAEAAQAAAAAAAQABAAEAAQAAAAAAAQABAAAAAAABAAAAAQAAAAAAAQACAAAAAQABAAAAAAAAAAAAAQAAAAEAAQABAAEAAQABAAAAAAABAAIAAQAAAAAAAQAAAAEAAQABAAEAAQABAAAAAQABAAAAAAABAAEAAQAAAAEAAQAAAAEAAAAAAAEAAQABAAAAAQAAAAAAAgABAAEAAAAAAAEAAAABAAEAAAABAAEAAQAAAAEAAQAAAAEAAAABAAAAAQABAAAAAQAAAAIAAQABAAIAAAABAAEAAQABAAAAAQABAAEAAQABAAAAAQAAAAEAAAAAAAEAAAABAAAAAQABAAEAAQAAAAEAAQAAAAEAAQAAAAEAAAABAAEAAQABAAEAAAABAAEAAQACAAEAAAAAAAEAAQAAAAAAAQABAAAAAQABAAEAAAABAAAAAAABAAAAAQABAAAAAQABAAEAAQABAAAAAAAAAAAAAQACAAEAAAABAAEAAAABAAEAAQABAAAAAQABAAAAAQAAAAEAAgAAAAAAAQABAAEAAAAAAAAAAQABAAEAAQABAAEAAQABAAAAAQABAAEAAQABAAEAAAAAAAEAAQABAAAAAAABAAAAAAABAAIAAQABAAEAAQAAAAEAAAAAAAEAAAAAAAEAAAAAAAEAAAACAAEAAQAAAAEAAQAAAAEAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAQAAAAEAAgABAAEAAAABAAEAAAABAAEAAAAAAAEAAAAAAAEAAAABAAAAAQAAAAAAAQABAAAAAAABAAEAAQAAAAEAAQAAAAEAAQAAAAEAAQAAAAEAAQABAAEAAQAAAAAAAQAAAAAAAQABAAEAAAABAAEAAAAAAAAAAQAAAAEAAQAAAAAAAAABAAAAAQABAAEAAAABAAEAAQAAAAEAAQABAAIAAAABAAAAAQABAAAAAAAAAAEAAQABAAEAAAAAAAEAAAABAAEAAgAAAAEAAQAAAAEAAQABAAEAAQAAAAAAAAABAAEAAQAAAAAAAAABAAEAAQABAAAAAAABAAEAAAAAAAEAAQABAAAAAAABAAAAAQABAAAAAAAAAAEAAAABAAEAAAABAAEAAQABAAEAAAAAAAAAAQAAAAEAAQAAAAAAAQABAAAAAAAAAAAAAQAAAAAAAAAAAAEAAAAAAAAAAQABAAAAAAABAAAAAAAAAAAAAQACAAAAAAAAAAAAAQAAAAAAAAABAAAAAQACAAAAAAABAAAAAQAAAAAAAQAAAAAAAAAAAAEAAQAAAAEAAQAAAAEAAAAAAAEAAAAAAAAAAQABAAAAAAABAAEAAAABAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAQABAAAAAQAAAAEAAAABAAEAAAAAAAEAAQABAAAAAQABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAQABAAAAAAAAAAEAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAQABAAAAAAABAAAAAAAAAAEAAAAAAAAAAAABAAAAAAAAAAAAAAABAAEAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAEAAQABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAEAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAEAAAAAAAEAAQABAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//AAAAAAAAAAD//wAAAAAAAP//AAAAAAAA//8AAAAAAAD/////AAAAAAAAAAAAAAAAAAAAAP////8AAAAA////////AAAAAP//AAAAAAAAAAAAAAAAAAAAAP////8AAAAA/////wAA//8AAP//AAAAAAAAAAD/////AAAAAAAA/////////v8AAAAA//8AAP////8AAAAAAAAAAAAA////////AAD///////8AAAAA////////AAD///////////7/AAD/////AAD///////////7////+/////////////v/+/////v////7///////////8AAP7//v//////AAD+//7//f/+//7////9//3//v/9//7//v/+//3//v/9//7//v/9//7//v/+//7//v/9//7//v/9/////f/9//3//f////3//v/+//z//f/+//3//f/9//7//f/9//7//f/9//3//f/8//z//P/9//z/+//+//z//P/8//z/+//8//z/+//9//z//P/8//v/+//7//z//P/8//z//P/8//v/+//7//v//P/8//v//P/6//v//P/7//v/+//7//r/+v/6//v/+//6//z/+//6//z/+v/6//r/+v/6//r/+//6//n/+v/6//v/+v/6//r/+P/6//r/+f/5//r/+//5//n/+v/5//j/+v/6//r/+f/4//n/+v/5//n/+P/4//n/+f/4//f/+P/4//n/+P/4//j/9//4//j/+P/4//f/9//2//f/9//2//j/+P/3//j/+P/3//j/9//2//b/9v/2//X/9v/2//X/9v/2//T/9f/2//X/9v/3//b/9f/2//X/9f/2//b/9//1//X/9P/1//X/9P/0//T/9f/1//T/9P/0//T/8//z//P/9P/0//X/9P/0//T/9P/1//T/8//z//T/9P/0//T/9P/1//T/9P/z//L/8//z//T/8//y//P/8//z//T/9P/y//L/8//z//P/8//y//P/9f/0//T/9P/y//P/9P/z//X/9f/1//X/9P/0//X/9f/1//b/8//0//X/9f/0//P/9f/1//T/9P/0//X/9f/0//T/9f/2//b/9//3//b/9//2//T/8v/1//T/9P/0//T/8//z//T/9f/1//T/9f/0//T/9P/z//T/9f/0//T/9P/1//X/9f/1//T/9P/z//P/8v/x//H/8v/y//L/8//0//X/9P/0//T/9P/0//T/8//z//T/9P/1//X/9f/3//f/9v/3//f/9v/1//X/9f/1//T/8//z//P/9P/0//X/9v/2//j/9//1//X/9f/1//b/+P/3//j/+f/5//j/+f/6//j/9//2//f/+P/6//f/9v/2//b/9v/0//L/8v/0//b/9f/2//f/9v/7//j/9v/2//b/9//6//r/9f/0//L/8v/y//L/9v/4//j/+v/9//v/+//6//n/9f/z//X/8f/v/+//9P/6//n/9//4//X/9f/z//D/7f/t/+7/7v/1//v/+f/1//P/7//u//L/8v/v//L/9P/1//j/+f/4//j/+v/7//j/9P/w/+r/7P/x//n//v/+/////v/9//z/+v/6//j/9v/1//j//v8BAAMAAwADAAIAAgADAAYADQASABEADwAOABAAEAAOAAgAAgD8//L/7f/t//D/9f/9/wYADgAYAB8AIgAfABYADQALAAwAEwAYABcAGwAgAB4AIwAqACMAFQAJAAAA9f/w//j/CQAWAB4AIgAcABsAGAAdACMAIQAfABgAEQAPABIAFgAfACgAIwASAA8ACQAEABMAIQAfACYAOwBLAE8ARAA4ACEAAADx/wAAGQAtADkAOgBLAFoATwAkAPP/7v/8//v/6//h//L/EgA4AFMAXABiAGYAawBwAHoAjwCPAHgAYwA/AAkA9//2//X/AQAAAO3/6P///yQAUgBpAFUALgAHAAcAEgAsAF4AlQDOAOQAywCBACUA/P8GABMA///n//T/CwAyAGgAfwB8AH0AbwBLABgA7f/9/yIAMwBOAG8AgACVAJcAawBWAEQAKQAeABsAKwBEAHEAogC4ALoApQCWAJYAbwAqAPT//P9HAI8AmwB6AFwASgA/AEgARAADAOD/EABSAIQAtgDPAMUAzQDQAKYAVAAmAGQAngB5AC8AAgAjAHIAmQBrACYAHgA9AEUAHgDv/xYArgAiARYBvQBwAF4AcABuAD4AFQADABQAUwCCAJEA1gBDAUQBxABPABkACgAeAEcAZABnAGkAdwCAAKgA/wAaAe8AwABnAAIA4v8YAE0AdQDOAP4A2wCpAIoAewCcAKcAYAAsADYAUQCBALIAxQC4AGUADgBEALYAxgByADYANgBQAJoAwwC1AN0ALgEsAZ0AIAAiAFkAkgCmAI0AagBwAJIAnACAAFUANAA6AFUALwDk/yQAzAAPAREBEgHeAJUAVwAbAPj/8v8eAFsAXABSAK4AWgGNAQwBlQBuAJAAnwAUAFf/Xf/y/2QAigBVAGcATgEQArQBnQC7/93/wAAnAYQA0//T/2QA9QC4APn/lP/l/1kAlwCQAGAAyACqAc8BtACj/63/QwDXABsBkAA3ANkAlAG1ARABPAAiAFAA4v9a//z+Ff8AANoA/wDgAHkAJwARAfUB7AE7ASgAzP94AJsB6QFWAecApgA2AGH/2/5w/zsAYQASAPb/DAAAAHEAPAE9AeMAKgEJAW0AaQCxADIB7AHOAZcAj/9H/5z/sP96/9z/3P/E/x4A6P/g/zYB1ALSAk8BEgDL/0kA6wAiAckAEAASAH8ARADO/9b/TAC3ADUATf9S/77/aAB4Ad4BSwH/AA0BDgFAAcEAvP9D/8f/LgBB/zT/wwC9AcYBnAFIAT8Aof8IAPb/wP8EAA0AAABbAC8BlwEnAWQBWAKvAQgAZP8x/0P/xP9EAH4ArADFAGkBsgF8AAAAowDgADUAPADwAIoARAAUAUkBdQAhANYAwwDI/4P/ZP+8/8MAzwApADgAzwCSAYcBuwB7AHcA1gB/AcEAf//p/7MAogCBAL3/gP9WAJUAoACiAGUA8/9qAFQBawBb/zr/o/8wAcsB3QBJAKwAIwHQAKoAFwEQAZ4AUQCz/0v/xP+wADsBJwFaAYgBaAFQAfkA/f+i/4oAmQBy/23+1/4IAbwCRwLSAVEBvv/7/vH+Hv4H/ikAMQIZAqUABADXAOcBOwJ8ASkABf+d/tP+yP67/sb/DgGYAN7/jgCqABMA/ABdAbj/uf4o/97/SwDuAHkBdgE6Ab0A0f90/3QACwG7AHkAHwDL/wYAgQCLAGUAHgA9AG4ADwAAAND/GQCWAbACMwL1ACYAAwBrAHkAwv8T/w//r/9MAGIAcwDYAOQBmwLSAZoAdwCDABcAXgC+/xv+pv52ALMAiwD/ALIA6AAeAvYB8/85/tz+MwAIAGL/k/+Z/zUApAFUAv8BRgEjAfQAGAC9/rT9nv2H/oz/iP8Z/xsA/wFmAhgC/QHEAP3/FgFLAW7/Kf6J/pb/ggDJAJsAzf+2/0IByQHQ/yn++f2G/rz/jgBcANX/IAAyAg8E1AIiAvYCzgFYAIP/LP73/AL+QACIAEEASQGfAsgCowLOAkUCnwBq/6b/vv+e/sj9O/9GAckBdAFGAqwCzwFYAS4BYwDH/l7+f/6N/mP/4P+wAEgBJwL4A1gDnwHAAMP/6f78/hP/y/5u/4kAvgD1/yYAewHEAdoAJQDu/nf9fP2C/kD/g/8tALIASgAGAIH/5v6o/0MAQv/Q/tv+5v2J/kwAeQF6Aa4AXwAE/4r+aQBCAYsA7/89AIgArQAVAeYABQGEAf4B7gEkAHn/1AA6Aq4DQwN2AswCzQIjA1QDxgJrAmEC+gEsAj0CNwJ3AyIE1gMKAzcCrAEiAWAC5wKxAYQB3gDg/3AAPAHjAUECYQFl/7H+1P8BACMAs/+r/tn9wPzC/Ej9yvxf/Pf8Xv16/bH8Xvsg/PX8BP2U/I36Yvrf+3X9IP6q/Qr9Evx5/IL9PPyG+gr7XfwK/a79D//E/0kBAgPTAy8E9gJ+AsIC4gHvAPoAFgKcA1cEMQQsBbsGPQi7CdsIkwdBBooFKQZhBrkGrgYoB1AIfQg6CI0I4Ag6CQ8JhweXBEoDtwMMBMgFcQUdAzkCZAGBAKX/vP0g+x75AfjE9z/3mPVl9SP1mvU89s/0rfNj8WvwoPFM8WXw6e9n8LXxO/Ma9Rz2e/df+dr7Uf7g/f/9iv4W/0UCuQH7/zwBygC3AAUDCwRdAyYEfwRLBH8FSQdCCIsI7Qm0CckIAQrvCqwMZA6XDjcPtA/7Dz4QPhEZE98SsxEaEYsQaBAQEG8RcBFWD00N5gl3B/kFHQRyAgoAN/yD+cz38fUE9YrzX/GU7nvqauca5Sjjd+Ld4Zrg/d4Z3qTcZttZ3XvgU+Zo8fb8jgSgCHQMbA/tEEoS8hHQC+EBr/tM+Cr1dfIN8xT4MPwH/8b/iv12/R4AmQFE/5/9f/6r/sICxwqlEAsWCx4JJBAlpCPJIFgdWRrcFjAR9gkmBcQFbAkQDqsTOxe7F6YXeRhaGD0WihNoD+EJJwWFAZz+"}
+2026-02-02 13:27:58,668:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio.delta
+2026-02-02 13:27:58,676:voicelive_agent:DEBUG:[ws-1770056877] Audio delta received: 9600 bytes, callback set: False
+2026-02-02 13:27:58,681:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,684:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_Jfmsd5I3n6uIQCJNMhtce","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" recent"}
+2026-02-02 13:27:58,690:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,694:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,698:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_6HunN1UXIsZOh8NCtY8FRB","type":"response.audio_transcript.delta","response_id":"resp_D4swP1dD3oOPq0cuqPt6R","item_id":"item_D4swPXy4lh5EvLNkE6Xc2","output_index":0,"content_index":0,"delta":" experience"}
+2026-02-02 13:27:58,701:voicelive_agent:DEBUG:[ws-1770056877] Received event: response.audio_transcript.delta
+2026-02-02 13:27:58,705:voicelive_agent:ERROR:[ws-1770056877] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:27:58,710:voicelive_agent:INFO:[ws-1770056877] Stopping agent
+2026-02-02 13:27:58,719:voicelive_agent:INFO:[ws-1770056877] Agent cancelled
+2026-02-02 13:27:58,726:main:ERROR:Error in client WebSocket
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\main.py", line 757, in client_websocket
+    async for message in websocket.iter_json():
+    ...<11 lines>...
+            break
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\starlette\websockets.py", line 161, in iter_json
+    yield await self.receive_json()
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\starlette\websockets.py", line 134, in receive_json
+    raise RuntimeError('WebSocket is not connected. Need to call "accept" first.')
+RuntimeError: WebSocket is not connected. Need to call "accept" first.
+2026-02-02 13:27:58,730:voicelive_agent:INFO:[ws-1770056877] Stopping agent
+2026-02-02 13:27:59,015:voicelive_agent:INFO:Pre-warmed connection created in 1.18s
+2026-02-02 13:28:16,431:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:28:16,433:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:28:16,437:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:28:16,441:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:28:16,443:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:28:16,446:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:28:17,586:voicelive_agent:INFO:Pre-warmed connection created in 1.15s
+2026-02-02 13:28:33,648:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:28:33,648:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:28:33,649:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:28:33,651:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:28:33,651:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:28:33,652:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:28:34,318:voicelive_agent:INFO:Pre-warmed connection created in 0.67s
+2026-02-02 13:28:50,435:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:28:50,441:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:28:50,449:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:28:50,458:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:28:50,464:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:28:50,469:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:28:51,610:voicelive_agent:INFO:Pre-warmed connection created in 1.16s
+2026-02-02 13:29:07,673:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:29:07,679:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:29:07,686:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:29:07,693:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:29:07,701:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:29:07,707:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:29:08,376:voicelive_agent:INFO:Pre-warmed connection created in 0.69s

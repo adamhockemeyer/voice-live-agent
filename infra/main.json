@@ -721,7 +721,7 @@
             "value": [
               {
                 "name": "NEXT_PUBLIC_API_URL",
-                "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('rg-{0}', parameters('environmentName'))), 'Microsoft.Resources/deployments', 'api-container-app'), '2022-09-01').outputs.fqdn.value]"
+                "value": "[format('https://{0}', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('rg-{0}', parameters('environmentName'))), 'Microsoft.Resources/deployments', 'api-container-app'), '2022-09-01').outputs.fqdn.value)]"
               }
             ]
           },

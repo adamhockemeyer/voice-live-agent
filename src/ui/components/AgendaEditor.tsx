@@ -1,8 +1,6 @@
 'use client';
 
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { useEffect, useCallback } from 'react';
+import { useRef } from 'react';
 
 interface AgendaEditorProps {
   content: string;
@@ -11,16 +9,12 @@ interface AgendaEditorProps {
   placeholder?: string;
 }
 
-function ToolbarButton({
+function MarkdownButton({
   onClick,
-  isActive,
-  disabled,
   title,
   children,
 }: {
   onClick: () => void;
-  isActive?: boolean;
-  disabled?: boolean;
   title: string;
   children: React.ReactNode;
 }) {
@@ -28,12 +22,8 @@ function ToolbarButton({
     <button
       type="button"
       onClick={onClick}
-      disabled={disabled}
       title={title}
-      className={`p-2 rounded text-sm font-medium transition-colors ${isActive
-          ? 'bg-blue-500 text-white'
-          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-        } disabled:opacity-50 disabled:cursor-not-allowed`}
+      className="px-3 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded text-sm font-medium transition-colors"
     >
       {children}
     </button>
@@ -41,155 +31,116 @@ function ToolbarButton({
 }
 
 export function AgendaEditor({ content, onChange, disabled, placeholder }: AgendaEditorProps) {
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: content,
-    editable: !disabled,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getText());
-    },
-    editorProps: {
-      attributes: {
-        class: 'prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-[200px] p-3',
-      },
-    },
-  });
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Update content when prop changes externally
-  useEffect(() => {
-    if (editor && content !== editor.getText()) {
-      editor.commands.setContent(content);
-    }
-  }, [content, editor]);
+  const insertMarkdown = (before: string, after: string = '', defaultText: string = 'text') => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
 
-  // Update editable state
-  useEffect(() => {
-    if (editor) {
-      editor.setEditable(!disabled);
-    }
-  }, [disabled, editor]);
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end) || defaultText;
+    const newContent =
+      content.substring(0, start) +
+      before +
+      selectedText +
+      after +
+      content.substring(end);
 
-  const insertNumberedStep = useCallback(() => {
-    if (!editor) return;
-    const text = editor.getText();
-    const lines = text.split('\n');
-    const lastLine = lines[lines.length - 1];
-    const match = lastLine.match(/^(\d+)\./);
-    const nextNum = match ? parseInt(match[1]) + 1 : 1;
-    editor.chain().focus().insertContent(`\n${nextNum}. `).run();
-  }, [editor]);
+    onChange(newContent);
 
-  if (!editor) {
-    return (
-      <div className="border rounded-lg dark:border-gray-600 p-3 min-h-[200px] bg-gray-50 dark:bg-gray-700/50">
-        <p className="text-gray-400">{placeholder || 'Loading editor...'}</p>
-      </div>
-    );
-  }
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(
+        start + before.length,
+        start + before.length + selectedText.length
+      );
+    }, 0);
+  };
+
+  const insertAtLineStart = (prefix: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const lineStart = content.lastIndexOf('\n', start - 1) + 1;
+    const newContent = content.substring(0, lineStart) + prefix + ' ' + content.substring(lineStart);
+
+    onChange(newContent);
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length + 1, start + prefix.length + 1);
+    }, 0);
+  };
 
   return (
-    <div className={`border rounded-lg dark:border-gray-600 overflow-hidden ${disabled ? 'opacity-50' : ''}`}>
+    <div className="border rounded-lg dark:border-gray-600 overflow-hidden">
       {/* Toolbar */}
-      <div className="flex flex-wrap gap-1 p-2 border-b dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50">
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          isActive={editor.isActive('bold')}
-          disabled={disabled}
+      <div className="flex flex-wrap gap-2 p-2 border-b dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50">
+        <MarkdownButton
+          onClick={() => insertMarkdown('**', '**', 'bold')}
           title="Bold (Ctrl+B)"
         >
           <strong>B</strong>
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          isActive={editor.isActive('italic')}
-          disabled={disabled}
-          title="Italic (Ctrl+I)"
+        </MarkdownButton>
+        <MarkdownButton
+          onClick={() => insertMarkdown('*', '*', 'italic')}
+          title="Italic"
         >
           <em>I</em>
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          isActive={editor.isActive('strike')}
-          disabled={disabled}
+        </MarkdownButton>
+        <MarkdownButton
+          onClick={() => insertMarkdown('~~', '~~', 'strikethrough')}
           title="Strikethrough"
         >
           <s>S</s>
-        </ToolbarButton>
+        </MarkdownButton>
 
-        <div className="w-px bg-gray-300 dark:bg-gray-600 mx-1" />
+        <div className="w-px bg-gray-300 dark:bg-gray-600" />
 
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          isActive={editor.isActive('heading', { level: 2 })}
-          disabled={disabled}
+        <MarkdownButton
+          onClick={() => insertMarkdown('# ', '', 'Heading')}
           title="Heading"
         >
-          H
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          isActive={editor.isActive('bulletList')}
-          disabled={disabled}
+          H1
+        </MarkdownButton>
+        <MarkdownButton
+          onClick={() => insertAtLineStart('-')}
           title="Bullet List"
         >
           •
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          isActive={editor.isActive('orderedList')}
-          disabled={disabled}
+        </MarkdownButton>
+        <MarkdownButton
+          onClick={() => insertAtLineStart('1.')}
           title="Numbered List"
         >
           1.
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={insertNumberedStep}
-          disabled={disabled}
-          title="Add Numbered Step"
-        >
-          +Step
-        </ToolbarButton>
+        </MarkdownButton>
 
-        <div className="w-px bg-gray-300 dark:bg-gray-600 mx-1" />
+        <div className="w-px bg-gray-300 dark:bg-gray-600" />
 
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          isActive={editor.isActive('blockquote')}
-          disabled={disabled}
-          title="Quote"
+        <MarkdownButton
+          onClick={() => insertMarkdown('`', '`', 'code')}
+          title="Inline Code"
         >
-          &quot;
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          disabled={disabled}
-          title="Horizontal Rule"
+          {'</>'}
+        </MarkdownButton>
+        <MarkdownButton
+          onClick={() => insertMarkdown('```\n', '\n```', 'code block')}
+          title="Code Block"
         >
-          —
-        </ToolbarButton>
-
-        <div className="flex-1" />
-
-        <ToolbarButton
-          onClick={() => editor.chain().focus().undo().run()}
-          disabled={disabled || !editor.can().undo()}
-          title="Undo (Ctrl+Z)"
-        >
-          ↩
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().redo().run()}
-          disabled={disabled || !editor.can().redo()}
-          title="Redo (Ctrl+Y)"
-        >
-          ↪
-        </ToolbarButton>
+          {'</>'}
+        </MarkdownButton>
       </div>
 
-      {/* Editor Content */}
-      <EditorContent
-        editor={editor}
-        className="bg-white dark:bg-gray-800 min-h-[200px]"
+      {/* Editor */}
+      <textarea
+        ref={textareaRef}
+        value={content}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        placeholder={placeholder || 'Enter agent instructions in markdown...'}
+        className="w-full min-h-[300px] p-4 border-0 rounded-lg font-mono text-sm dark:bg-gray-800 dark:text-white resize-none focus:outline-none disabled:opacity-50"
       />
     </div>
   );

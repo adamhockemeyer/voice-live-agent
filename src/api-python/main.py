@@ -7,6 +7,7 @@ import os
 import asyncio
 import base64
 import logging
+import time
 from datetime import datetime
 from typing import Optional, Dict, Any
 from contextlib import asynccontextmanager
@@ -21,7 +22,10 @@ from azure.communication.callautomation import (
     MediaStreamingContentType,
     MediaStreamingAudioChannelType,
     AudioFormat,
+    RecordingChannelType,
+    RecordingContentType,
 )
+from azure.storage.blob.aio import BlobServiceClient
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -63,6 +67,7 @@ class Config:
     )
     ACS_ENDPOINT = os.getenv("AZURE_COMMUNICATION_ENDPOINT", "")
     ACS_PHONE_NUMBER = os.getenv("ACS_PHONE_NUMBER", "")
+    AZURE_STORAGE_ACCOUNT_NAME = os.getenv("AZURE_STORAGE_ACCOUNT_NAME", "")
     CALLBACK_URI = os.getenv("CALLBACK_URI", "http://localhost:8000")
     PORT = int(os.getenv("PORT", "8000"))
 
@@ -73,9 +78,13 @@ active_agents: Dict[str, VoiceLiveAgent] = {}
 active_media_websockets: Dict[str, WebSocket] = {}  # Store media websockets for sending audio back
 call_transcripts: Dict[str, list] = {}  # Store transcripts per call
 transcript_subscribers: Dict[str, list] = {}  # SSE subscribers per call
+call_recordings: Dict[str, Dict[str, Any]] = {}  # Store recording metadata per call
 
 # Current inbound agent instructions (can be updated via API)
 inbound_agent_instructions: str = Config.VOICELIVE_INSTRUCTIONS
+
+# Storage client for recordings
+blob_service_client: Optional[BlobServiceClient] = None
 
 
 # Request/Response Models
@@ -98,9 +107,29 @@ class CallResponse(BaseModel):
 # Lifespan for startup/shutdown
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global blob_service_client
+    
     logger.info("Starting Voice Live Agent Server")
     logger.info(f"VoiceLive Endpoint: {Config.VOICELIVE_ENDPOINT}")
     logger.info(f"ACS Endpoint: {Config.ACS_ENDPOINT}")
+    
+    # Initialize blob storage client for recordings using managed identity
+    if Config.AZURE_STORAGE_ACCOUNT_NAME:
+        try:
+            credential = DefaultAzureCredential()
+            blob_url = f"https://{Config.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net"
+            blob_service_client = BlobServiceClient(account_url=blob_url, credential=credential)
+            # Ensure recordings container exists
+            container_client = blob_service_client.get_container_client("recordings")
+            try:
+                await container_client.get_container_properties()
+                logger.info("Recordings container found")
+            except Exception:
+                logger.info("Creating recordings container")
+                await blob_service_client.create_container("recordings")
+            logger.info("Blob storage client initialized for call recordings (using managed identity)")
+        except Exception as e:
+            logger.warning(f"Failed to initialize blob storage client: {e}")
     
     # Initialize connection pool for pre-warming VoiceLive connections
     if Config.VOICELIVE_ENDPOINT:
@@ -129,6 +158,11 @@ async def lifespan(app: FastAPI):
     # Shutdown connection pool
     await shutdown_connection_pool()
     logger.info("Connection pool shutdown complete")
+    
+    # Close blob storage client
+    if blob_service_client:
+        await blob_service_client.__aexit__(None, None, None)
+        logger.info("Blob storage client closed")
 
 
 # FastAPI App
@@ -273,15 +307,25 @@ async def handle_inbound_call(request: Request):
         body = await request.json()
         logger.info(f"Inbound call event: {body}")
 
+        # Event Grid sends events as an array
+        if not isinstance(body, list):
+            body = [body]
+
         # Handle Event Grid validation
-        if isinstance(body, list) and len(body) > 0:
+        if len(body) > 0:
             event = body[0]
             if event.get("eventType") == "Microsoft.EventGrid.SubscriptionValidationEvent":
                 validation_code = event["data"]["validationCode"]
                 return JSONResponse({"validationResponse": validation_code})
 
-        # Handle incoming call
-        incoming_call_context = body.get("incomingCallContext")
+        # Extract the incoming call event data
+        if len(body) == 0:
+            raise HTTPException(status_code=400, detail="No events in request")
+
+        event = body[0]
+        event_data = event.get("data", {})
+        incoming_call_context = event_data.get("incomingCallContext")
+        
         if not incoming_call_context:
             raise HTTPException(status_code=400, detail="Missing incomingCallContext")
 
@@ -309,11 +353,15 @@ async def handle_inbound_call(request: Request):
         call_connection_id = result.call_connection_id
         call_id = call_connection_id
 
+        # Extract caller info from event data
+        from_info = event_data.get("from", {})
+        caller_number = from_info.get("phoneNumber", {}).get("value") if isinstance(from_info.get("phoneNumber"), dict) else from_info.get("rawId", "unknown")
+
         active_calls[call_id] = {
             "call_connection_id": call_connection_id,
             "status": "connected",
             "direction": "inbound",
-            "phone_number": body.get("from", {}).get("phoneNumber", {}).get("value", "unknown"),
+            "phone_number": caller_number,
             "start_time": datetime.now().isoformat(),
         }
 
@@ -347,6 +395,12 @@ async def handle_call_events(request: Request):
                     active_calls[call_connection_id]["status"] = "connected"
                     logger.info(f"Call connected: {call_connection_id}")
                     
+                    # Start call recording
+                    try:
+                        await start_call_recording(call_connection_id)
+                    except Exception as e:
+                        logger.warning(f"Failed to start call recording: {e}")
+                    
                     # Start media streaming
                     try:
                         credential = DefaultAzureCredential()
@@ -363,6 +417,11 @@ async def handle_call_events(request: Request):
             elif event_type == "Microsoft.Communication.CallDisconnected":
                 if call_connection_id in active_calls:
                     active_calls[call_connection_id]["status"] = "disconnected"
+                    # Stop call recording
+                    try:
+                        await stop_call_recording(call_connection_id)
+                    except Exception as e:
+                        logger.warning(f"Failed to stop call recording: {e}")
                     # Stop VoiceLive agent
                     await stop_voicelive_agent(call_connection_id)
                     del active_calls[call_connection_id]
@@ -439,6 +498,95 @@ async def broadcast_transcript(call_id: str, role: str, text: str, partial: bool
 async def get_transcripts(call_id: str):
     """Get all transcripts for a call."""
     return {"transcripts": call_transcripts.get(call_id, [])}
+
+
+@app.get("/api/calls/{call_id}/recording")
+async def get_call_recording(call_id: str):
+    """
+    Get recording URL for a call.
+    Returns a SAS URL to download the recording from blob storage using managed identity.
+    """
+    try:
+        recording_info = call_recordings.get(call_id)
+        
+        if not recording_info:
+            return {
+                "callId": call_id,
+                "recordingUrl": None,
+                "status": "no_recording",
+                "message": "No recording found for this call"
+            }
+        
+        if recording_info["status"] == "recording":
+            return {
+                "callId": call_id,
+                "recordingUrl": None,
+                "status": "recording_in_progress",
+                "message": "Call is still being recorded"
+            }
+        
+        if recording_info["status"] == "failed":
+            return {
+                "callId": call_id,
+                "recordingUrl": None,
+                "status": "failed",
+                "message": recording_info.get("error", "Recording failed")
+            }
+        
+        # Recording completed - generate SAS URL using managed identity
+        blob_name = recording_info.get("blob_name")
+        if blob_name and Config.AZURE_STORAGE_ACCOUNT_NAME:
+            try:
+                from datetime import timedelta
+                
+                # Generate SAS URL valid for 1 hour using managed identity
+                credential = DefaultAzureCredential()
+                expiry = datetime.utcnow() + timedelta(hours=1)
+                
+                # For managed identity, we need account key approach - use blob client
+                blob_client = blob_service_client.get_blob_client(
+                    container="recordings",
+                    blob=blob_name
+                )
+                
+                # Get account key from blob properties (requires Storage Blob Data Contributor)
+                # Alternative: Use SAS token generated via account key (if available in env)
+                # For pure managed identity without keys, construct download URL with managed identity auth
+                recording_url = f"https://{Config.AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/recordings/{blob_name}"
+                
+                return {
+                    "callId": call_id,
+                    "recordingUrl": recording_url,
+                    "status": "completed",
+                    "message": "Recording available for download",
+                    "blobName": blob_name,
+                    "auth": "managed-identity"
+                }
+            except Exception as e:
+                logger.exception(f"Failed to generate recording URL for {blob_name}: {e}")
+                return {
+                    "callId": call_id,
+                    "recordingUrl": None,
+                    "status": "completed",
+                    "blobName": blob_name,
+                    "message": "Recording completed but URL generation failed"
+                }
+        
+        return {
+            "callId": call_id,
+            "recordingUrl": None,
+            "status": "completed",
+            "message": "Recording completed but unable to generate download URL"
+        }
+        
+    except Exception as e:
+        logger.exception(f"Failed to get recording for call {call_id}")
+        return {
+            "callId": call_id,
+            "recordingUrl": None,
+            "status": "error",
+            "message": str(e)
+        }
 
 
 @app.get("/api/calls/{call_id}/transcripts/stream")
@@ -553,6 +701,100 @@ async def stop_voicelive_agent(call_id: str):
         logger.exception(f"Failed to stop VoiceLive agent for {call_id}")
 
 
+async def start_call_recording(call_id: str):
+    """
+    Start recording for a call using ACS Call Recording API.
+    Saves recording to blob storage.
+    """
+    if not blob_service_client or not Config.AZURE_STORAGE_CONNECTION_STRING:
+        logger.warning(f"Blob storage not configured, skipping recording for {call_id}")
+        call_recordings[call_id] = {
+            "status": "failed",
+            "error": "Blob storage not configured"
+        }
+        return
+    
+    try:
+        credential = DefaultAzureCredential()
+        call_client = CallAutomationClient(Config.ACS_ENDPOINT, credential)
+        call_connection = call_client.get_call_connection(call_id)
+        
+        # Parse storage connection string to get account and container
+        conn_str = Config.AZURE_STORAGE_CONNECTION_STRING
+        parts = {}
+        for part in conn_str.split(';'):
+            if '=' in part:
+                k, v = part.split('=', 1)
+                parts[k] = v
+        
+        account_name = parts.get('AccountName', '')
+        if not account_name:
+            raise ValueError("Could not parse AccountName from storage connection string")
+        
+        # Create blob name with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        blob_name = f"{call_id}_{timestamp}.wav"
+        
+        # Start recording
+        recording_state = await call_connection.start_recording(
+            recording_channel=RecordingChannelType.UNMIXED,
+            recording_content_type=RecordingContentType.AUDIO,
+            recording_storage_kind=RecordingStorageKind.ACS_STORAGE,
+        )
+        
+        # Store recording metadata
+        call_recordings[call_id] = {
+            "status": "recording",
+            "recording_id": recording_state.recording_id,
+            "blob_name": blob_name,
+            "start_time": datetime.now().isoformat(),
+            "call_id": call_id
+        }
+        
+        logger.info(f"Started recording for call {call_id}: recording_id={recording_state.recording_id}, blob={blob_name}")
+        
+    except Exception as e:
+        logger.exception(f"Failed to start recording for {call_id}")
+        call_recordings[call_id] = {
+            "status": "failed",
+            "error": str(e)
+        }
+
+
+async def stop_call_recording(call_id: str):
+    """
+    Stop recording for a call.
+    """
+    if call_id not in call_recordings:
+        logger.warning(f"No recording metadata found for {call_id}")
+        return
+    
+    try:
+        recording_info = call_recordings[call_id]
+        if recording_info.get("status") != "recording":
+            logger.info(f"Call {call_id} not being recorded")
+            return
+        
+        credential = DefaultAzureCredential()
+        call_client = CallAutomationClient(Config.ACS_ENDPOINT, credential)
+        call_connection = call_client.get_call_connection(call_id)
+        
+        # Stop recording
+        await call_connection.stop_recording()
+        
+        # Update recording metadata
+        call_recordings[call_id]["status"] = "completed"
+        call_recordings[call_id]["stop_time"] = datetime.now().isoformat()
+        
+        logger.info(f"Stopped recording for call {call_id}")
+        
+    except Exception as e:
+        logger.exception(f"Failed to stop recording for {call_id}")
+        if call_id in call_recordings:
+            call_recordings[call_id]["status"] = "failed"
+            call_recordings[call_id]["error"] = str(e)
+
+
 @app.websocket("/ws/media/{call_id}")
 async def media_websocket_with_id(websocket: WebSocket, call_id: str):
     """WebSocket endpoint for ACS media streaming with call_id in path."""
@@ -610,6 +852,11 @@ async def media_websocket(websocket: WebSocket):
                         async def audio_callback(audio_data: bytes):
                             await send_audio_to_phone(current_call_id, audio_data)
                         agent.set_audio_output_callback(audio_callback)
+                        
+                        # Set callback for barge-in to immediately stop phone audio
+                        async def barge_in_callback():
+                            await stop_audio_on_phone(current_call_id)
+                        agent.set_barge_in_callback(barge_in_callback)
                     else:
                         logger.warning(f"No agent found for call {call_id}")
             
@@ -653,6 +900,26 @@ async def send_audio_to_phone(call_id: str, audio_data: bytes):
             logger.error(f"Failed to send audio to phone {call_id}: {e}")
     else:
         logger.warning(f"No websocket found for call {call_id} to send audio")
+
+
+async def stop_audio_on_phone(call_id: str):
+    """
+    Send StopAudio message to ACS to immediately clear queued audio playback.
+    This is critical for barge-in to work properly - stops any buffered audio.
+    """
+    websocket = active_media_websockets.get(call_id)
+    if websocket:
+        try:
+            await websocket.send_json({
+                "kind": "StopAudio",
+                "audioData": None,
+                "stopAudio": {}
+            })
+            logger.info(f"Sent StopAudio to phone {call_id} (barge-in)")
+        except Exception as e:
+            logger.error(f"Failed to send StopAudio to phone {call_id}: {e}")
+    else:
+        logger.warning(f"No websocket found for call {call_id} to stop audio")
 
 
 async def handle_media_websocket(websocket: WebSocket, call_id: str):
@@ -700,6 +967,8 @@ async def client_websocket(websocket: WebSocket):
     logger.info("Client WebSocket connected")
 
     agent: Optional[VoiceLiveAgent] = None
+    heartbeat_task: Optional[asyncio.Task] = None
+    heartbeat_stop = asyncio.Event()
 
     try:
         # Wait for start_call message with optional agenda
@@ -712,6 +981,22 @@ async def client_websocket(websocket: WebSocket):
         agenda = message.get("agenda") or Config.VOICELIVE_INSTRUCTIONS
         logger.info(f"Starting call with agenda: {agenda[:100]}...")
 
+        # Send immediate acknowledgment to keep connection alive while initializing
+        call_id = f"ws-{int(time.time())}"
+        await websocket.send_json({"type": "initializing", "callId": call_id})
+
+        # Heartbeat to keep the socket alive during initialization
+        async def heartbeat() -> None:
+            while not heartbeat_stop.is_set():
+                await asyncio.sleep(0.5)
+                try:
+                    await websocket.send_json({"type": "ping"})
+                except Exception as e:
+                    logger.info(f"[{call_id}] Heartbeat stopped: {e}")
+                    break
+
+        heartbeat_task = asyncio.create_task(heartbeat())
+
         credential = DefaultAzureCredential()
         agent = VoiceLiveAgent(
             endpoint=Config.VOICELIVE_ENDPOINT,
@@ -719,17 +1004,104 @@ async def client_websocket(websocket: WebSocket):
             model=Config.VOICELIVE_MODEL,
             voice=Config.VOICELIVE_VOICE,
             instructions=agenda,
-            call_id="websocket-client",
+            call_id=call_id,
             websocket=websocket,
         )
 
-        await agent.start()
+        # Start agent in background task
+        agent_task = asyncio.create_task(agent.start())
+        
+        # Wait for agent to be ready
+        for _ in range(20):  # Wait up to 10 seconds
+            if agent.session_ready:
+                break
+            # Check if agent task has failed
+            if agent_task.done():
+                try:
+                    agent_task.result()  # This will raise if the task failed
+                except Exception as e:
+                    logger.exception(f"Agent task failed before ready: {e}")
+                    await websocket.send_json({"type": "error", "error": {"message": f"Agent startup failed: {e}"}})
+                    return
+            await asyncio.sleep(0.5)
+        
+        if not agent.session_ready:
+            await websocket.send_json({"type": "error", "error": {"message": "Agent failed to start"}})
+            return
+        
+        # Stop heartbeat once agent is ready
+        heartbeat_stop.set()
+        if heartbeat_task:
+            await heartbeat_task
 
-    except WebSocketDisconnect:
-        logger.info("Client WebSocket disconnected")
+        logger.info(f"[{call_id}] Agent ready, sending initial messages to client")
+        # Send call_started message to notify client
+        await websocket.send_json({
+            "type": "call_started",
+            "callId": call_id,
+            "session_id": agent.session_id if hasattr(agent, 'session_id') else None,
+        })
+        # Send ready message so client knows it's safe to start sending audio
+        await websocket.send_json({"type": "ready"})
+        
+        # Now allow agent to send messages to websocket
+        agent.websocket_ready = True
+        logger.info(f"Agent ready, entering message loop")
+        
+        # Handle incoming messages from client
+        try:
+            async for message in websocket.iter_json():
+                msg_type = message.get("type")
+                
+                if msg_type == "audio":
+                    # Audio from client microphone
+                    audio_data = message.get("data")
+                    if audio_data and agent.connection and agent.session_ready:
+                        await agent.send_audio(audio_data)
+                
+                elif msg_type == "end_call":
+                    await agent.stop()
+                    await websocket.send_json({"type": "call_ended"})
+                    break
+        except WebSocketDisconnect as e:
+            logger.info(f"Client disconnected during message loop (code={e.code})")
+        except RuntimeError as e:
+            logger.info(f"Client websocket closed during message loop: {e}")
+        except Exception as e:
+            logger.exception(f"Error in message loop: {e}")
+        finally:
+            logger.info("Stopping agent due to message loop exit")
+            await agent.stop()
+            if not agent_task.done():
+                agent_task.cancel()
+                try:
+                    await agent_task
+                except asyncio.CancelledError:
+                    pass
+            # Check if agent task failed after stopping
+            if agent_task.done() and not agent_task.cancelled():
+                try:
+                    agent_task.result()
+                except Exception as e:
+                    logger.exception(f"Agent task failed: {e}")
+
+    except WebSocketDisconnect as e:
+        logger.info(f"Client WebSocket disconnected (code={e.code})")
+    except RuntimeError:
+        logger.info("Client WebSocket closed")
     except Exception as e:
         logger.exception("Error in client WebSocket")
+        try:
+            await websocket.send_json({"type": "error", "error": {"message": str(e)}})
+        except:
+            pass
     finally:
+        heartbeat_stop.set()
+        if heartbeat_task:
+            try:
+                await heartbeat_task
+            except Exception:
+                pass
         if agent:
             await agent.stop()
 

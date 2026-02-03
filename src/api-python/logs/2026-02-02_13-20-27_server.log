@@ -1,0 +1,389 @@
+2026-02-02 13:20:28,337:main:INFO:Starting Voice Live Agent Server
+2026-02-02 13:20:28,341:main:INFO:VoiceLive Endpoint: https://ai-vla-py-2576.cognitiveservices.azure.com/
+2026-02-02 13:20:28,346:main:INFO:ACS Endpoint: https://acs-vla-py-2576.communication.azure.com
+2026-02-02 13:20:28,350:azure.identity.aio._credentials.environment:INFO:No environment configuration found.
+2026-02-02 13:20:28,395:azure.identity.aio._credentials.managed_identity:INFO:ManagedIdentityCredential will use IMDS
+2026-02-02 13:20:28,396:voicelive_agent:INFO:Connection pool started (size=2)
+2026-02-02 13:20:28,397:main:INFO:Connection pool initialized for pre-warming
+2026-02-02 13:20:28,405:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:20:28,411:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:20:28,413:azure.identity.aio._internal.decorators:DEBUG:EnvironmentCredential.get_token failed: EnvironmentCredential authentication unavailable. Environment variables are not fully configured.
+Visit https://aka.ms/azsdk/python/identity/environmentcredential/troubleshoot to troubleshoot this issue.
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\decorators.py", line 22, in wrapper
+    token = await fn(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\environment.py", line 126, in get_token
+    raise CredentialUnavailableError(message=message)
+azure.identity._exceptions.CredentialUnavailableError: EnvironmentCredential authentication unavailable. Environment variables are not fully configured.
+Visit https://aka.ms/azsdk/python/identity/environmentcredential/troubleshoot to troubleshoot this issue.
+2026-02-02 13:20:28,513:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=REDACTED&resource=REDACTED'
+Request method: 'GET'
+Request headers:
+    'User-Agent': 'azsdk-python-identity/1.25.1 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+No body was attached to the request
+2026-02-02 13:20:28,586:azure.identity.aio._internal.get_token_mixin:DEBUG:ImdsCredential.get_token failed: ManagedIdentityCredential authentication unavailable, no response from the IMDS endpoint.
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1298, in _wrap_create_connection
+    sock = await aiohappyeyeballs.start_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 122, in start_connection
+    raise first_exception
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 73, in start_connection
+    sock = await _connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 208, in _connect_sock
+    await loop.sock_connect(sock, address)
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\proactor_events.py", line 728, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\transport\_aiohttp.py", line 346, in send
+    result = await self.session.request(  # type: ignore
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\client.py", line 779, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\client.py", line 734, in _connect_and_send_request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        req, traces=traces, timeout=real_timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 672, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1239, in _create_connection
+    _, proto = await self._create_direct_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1611, in _create_direct_connection
+    raise last_exc
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1580, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1321, in _wrap_create_connection
+    raise client_error(req.connection_key, exc) from exc
+aiohttp.client_exceptions.ClientConnectorError: Cannot connect to host 169.254.169.254:80 ssl:default [The network location cannot be reached. For information about network troubleshooting, see Windows Help]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\imds.py", line 76, in _request_token
+    await self._client.request_token(*scopes, connection_timeout=1, retry_total=0)
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\managed_identity_client.py", line 34, in request_token
+    response = await self._pipeline.run(request, retry_on_methods=[request.method], **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 229, in run
+    return await first_node.send(pipeline_request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [Previous line repeated 1 more time]
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\policies\_retry_async.py", line 204, in send
+    raise err
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\policies\_retry_async.py", line 178, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [Previous line repeated 1 more time]
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 111, in send
+    await self._sender.send(request.http_request, **request.context.options),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\transport\_aiohttp.py", line 393, in send
+    raise ServiceRequestError(err, error=err) from err
+azure.core.exceptions.ServiceRequestError: Cannot connect to host 169.254.169.254:80 ssl:default [The network location cannot be reached. For information about network troubleshooting, see Windows Help]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\get_token_mixin.py", line 137, in _get_token_base
+    token = await self._request_token(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        *scopes, claims=claims, tenant_id=tenant_id, enable_cae=enable_cae, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\imds.py", line 86, in _request_token
+    raise CredentialUnavailableError(message=error_message) from ex
+azure.identity._exceptions.CredentialUnavailableError: ManagedIdentityCredential authentication unavailable, no response from the IMDS endpoint.
+2026-02-02 13:20:29,412:azure.identity.aio._internal.decorators:DEBUG:ManagedIdentityCredential.get_token failed: ManagedIdentityCredential authentication unavailable, no response from the IMDS endpoint.
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1298, in _wrap_create_connection
+    sock = await aiohappyeyeballs.start_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 122, in start_connection
+    raise first_exception
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 73, in start_connection
+    sock = await _connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 208, in _connect_sock
+    await loop.sock_connect(sock, address)
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\proactor_events.py", line 728, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\transport\_aiohttp.py", line 346, in send
+    result = await self.session.request(  # type: ignore
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\client.py", line 779, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\client.py", line 734, in _connect_and_send_request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        req, traces=traces, timeout=real_timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 672, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1239, in _create_connection
+    _, proto = await self._create_direct_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1611, in _create_direct_connection
+    raise last_exc
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1580, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1321, in _wrap_create_connection
+    raise client_error(req.connection_key, exc) from exc
+aiohttp.client_exceptions.ClientConnectorError: Cannot connect to host 169.254.169.254:80 ssl:default [The network location cannot be reached. For information about network troubleshooting, see Windows Help]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\imds.py", line 76, in _request_token
+    await self._client.request_token(*scopes, connection_timeout=1, retry_total=0)
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\managed_identity_client.py", line 34, in request_token
+    response = await self._pipeline.run(request, retry_on_methods=[request.method], **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 229, in run
+    return await first_node.send(pipeline_request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [Previous line repeated 1 more time]
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\policies\_retry_async.py", line 204, in send
+    raise err
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\policies\_retry_async.py", line 178, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [Previous line repeated 1 more time]
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 111, in send
+    await self._sender.send(request.http_request, **request.context.options),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\transport\_aiohttp.py", line 393, in send
+    raise ServiceRequestError(err, error=err) from err
+azure.core.exceptions.ServiceRequestError: Cannot connect to host 169.254.169.254:80 ssl:default [The network location cannot be reached. For information about network troubleshooting, see Windows Help]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\decorators.py", line 22, in wrapper
+    token = await fn(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\managed_identity.py", line 160, in get_token
+    return await cast(AsyncTokenCredential, self._credential).get_token(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        *scopes, claims=claims, tenant_id=tenant_id, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\get_token_mixin.py", line 93, in get_token
+    token_info = await self._get_token_base(*scopes, options=options, base_method_name="get_token", **kwargs)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\get_token_mixin.py", line 137, in _get_token_base
+    token = await self._request_token(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        *scopes, claims=claims, tenant_id=tenant_id, enable_cae=enable_cae, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\imds.py", line 86, in _request_token
+    raise CredentialUnavailableError(message=error_message) from ex
+azure.identity._exceptions.CredentialUnavailableError: ManagedIdentityCredential authentication unavailable, no response from the IMDS endpoint.
+2026-02-02 13:20:29,816:azure.identity.aio._internal.decorators:DEBUG:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:20:29,821:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:20:29,830:azure.identity.aio._credentials.chained:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:20:30,638:voicelive_agent:INFO:Pre-warmed connection created in 2.23s
+2026-02-02 13:20:35,652:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:20:35,654:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:20:35,656:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:20:35,657:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:20:35,657:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:20:36,221:voicelive_agent:INFO:Pre-warmed connection created in 0.57s
+2026-02-02 13:21:02,316:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:21:02,316:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:21:02,317:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:21:02,318:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:21:02,319:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:21:02,319:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:21:02,661:voicelive_agent:INFO:Pre-warmed connection created in 0.34s
+2026-02-02 13:21:05,417:main:INFO:Updated inbound agent instructions: You are Ava, an AI Assistant conducting a customer satisfaction survey. Follow this agenda:
+1. Greet...
+2026-02-02 13:21:08,704:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:21:08,705:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:21:08,706:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:21:08,707:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:21:08,708:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:21:08,708:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:21:09,226:voicelive_agent:INFO:Pre-warmed connection created in 0.52s
+2026-02-02 13:21:35,362:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:21:35,373:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:21:35,376:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:21:35,377:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:21:35,380:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:21:35,381:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:21:35,979:voicelive_agent:INFO:Pre-warmed connection created in 0.60s
+2026-02-02 13:21:42,032:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:21:42,033:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:21:42,037:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:21:42,043:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:21:42,046:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:21:42,048:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:21:42,517:voicelive_agent:INFO:Pre-warmed connection created in 0.48s
+2026-02-02 13:22:08,597:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:22:08,597:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:22:08,598:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:22:08,599:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:22:08,599:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:22:08,600:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:22:08,932:voicelive_agent:INFO:Pre-warmed connection created in 0.33s
+2026-02-02 13:22:14,971:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:22:14,972:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:22:14,975:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:22:14,978:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:22:14,979:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:22:14,983:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:22:15,502:voicelive_agent:INFO:Pre-warmed connection created in 0.53s
+2026-02-02 13:22:41,581:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:22:41,582:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:22:41,582:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:22:41,583:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:22:41,585:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:22:41,585:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:22:41,933:voicelive_agent:INFO:Pre-warmed connection created in 0.35s
+2026-02-02 13:22:47,991:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:22:47,996:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:22:48,002:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:22:48,008:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:22:48,011:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:22:48,014:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:22:48,446:voicelive_agent:INFO:Pre-warmed connection created in 0.44s
+2026-02-02 13:23:14,630:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:23:14,631:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:23:14,631:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:23:14,633:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:23:14,633:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:23:14,634:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:23:15,027:voicelive_agent:INFO:Pre-warmed connection created in 0.40s
+2026-02-02 13:23:21,129:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:23:21,129:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:23:21,130:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:23:21,131:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:23:21,132:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:23:21,132:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:23:21,542:voicelive_agent:INFO:Pre-warmed connection created in 0.41s
+2026-02-02 13:23:47,683:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:23:47,685:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:23:47,686:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:23:47,687:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:23:47,689:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:23:47,689:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:23:48,112:voicelive_agent:INFO:Pre-warmed connection created in 0.43s
+2026-02-02 13:23:54,166:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:23:54,166:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:23:54,167:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:23:54,168:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:23:54,169:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:23:54,170:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:23:54,646:voicelive_agent:INFO:Pre-warmed connection created in 0.48s
+2026-02-02 13:24:20,754:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:24:20,755:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:24:20,756:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:24:20,757:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:24:20,757:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:24:20,758:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:24:21,097:voicelive_agent:INFO:Pre-warmed connection created in 0.34s
+2026-02-02 13:24:27,175:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:24:27,176:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:24:27,176:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:24:27,178:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:24:27,179:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:24:27,179:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:24:27,666:voicelive_agent:INFO:Pre-warmed connection created in 0.49s

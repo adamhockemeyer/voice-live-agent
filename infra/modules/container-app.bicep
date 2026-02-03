@@ -13,6 +13,12 @@ param containerAppsEnvironmentId string
 @description('Container image to deploy')
 param containerImage string
 
+@description('Managed identity type: SystemAssigned, UserAssigned, or SystemAssigned, UserAssigned')
+param identityType string = 'SystemAssigned'
+
+@description('User-assigned identities map')
+param userAssignedIdentities object = {}
+
 @description('Target port for the container')
 param targetPort int
 
@@ -22,12 +28,16 @@ param env array = []
 @description('Secrets')
 param secrets array = []
 
+@description('Container registry settings')
+param registries array = []
+
 resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: name
   location: location
   tags: tags
   identity: {
-    type: 'SystemAssigned'
+    type: identityType
+    userAssignedIdentities: userAssignedIdentities
   }
   properties: {
     managedEnvironmentId: containerAppsEnvironmentId
@@ -43,6 +53,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
         }
       }
       secrets: secrets
+      registries: registries
     }
     template: {
       containers: [

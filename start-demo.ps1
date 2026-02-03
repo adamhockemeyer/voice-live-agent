@@ -175,70 +175,32 @@ if ($WithTunnels) {
                 Set-Content -Path $envFile -Value $content -NoNewline
                 Write-Host "Updated CALLBACK_URI in .env" -ForegroundColor Green
             }
-            
-            # Create/update Event Grid subscription for inbound calls
-            Write-Host ""
-            Write-Host "Configuring Event Grid subscription for inbound calls..." -ForegroundColor Yellow
-            
-            # Read ACS info from .env or azd
-            $acsName = $null
-            $resourceGroup = $null
-            
-            # Try to get from azd env
-            try {
-                $acsName = (azd env get-value AZURE_COMMUNICATION_SERVICES 2>$null)
-                $resourceGroup = (azd env get-value AZURE_RESOURCE_GROUP 2>$null)
-                if (-not $resourceGroup) {
-                    $envName = (azd env get-value AZURE_ENV_NAME 2>$null)
-                    if ($envName) { $resourceGroup = "rg-$envName" }
-                }
-            }
-            catch { }
-            
-            if ($acsName -and $resourceGroup) {
-                $webhookEndpoint = "$tunnelUrl/api/calls/inbound"
-                $subscriptionName = "local-dev-inbound-calls"
-                
-                Write-Host "  ACS Resource: $acsName" -ForegroundColor Gray
-                Write-Host "  Resource Group: $resourceGroup" -ForegroundColor Gray
-                Write-Host "  Webhook: $webhookEndpoint" -ForegroundColor Gray
-                
-                # Get ACS resource ID
-                $acsId = az communication show --name $acsName --resource-group $resourceGroup --query id -o tsv 2>$null
-                
-                if ($acsId) {
-                    # Delete existing subscription if it exists (to update the URL)
-                    az eventgrid event-subscription delete `
-                        --name $subscriptionName `
-                        --source-resource-id $acsId `
-                        --output none 2>$null
-                    
-                    # Create new subscription
-                    $result = az eventgrid event-subscription create `
-                        --name $subscriptionName `
-                        --source-resource-id $acsId `
-                        --endpoint $webhookEndpoint `
-                        --endpoint-type webhook `
-                        --included-event-types "Microsoft.Communication.IncomingCall" `
-                        --output none 2>&1
-                    
-                    if ($LASTEXITCODE -eq 0) {
-                        Write-Host "Event Grid subscription created for inbound calls!" -ForegroundColor Green
-                        Write-Host "Inbound calls to your ACS phone number will now route to your local API." -ForegroundColor Green
-                    }
-                    else {
-                        Write-Host "Warning: Could not create Event Grid subscription: $result" -ForegroundColor Yellow
-                        Write-Host "You may need to manually configure Event Grid in Azure Portal." -ForegroundColor Yellow
-                    }
+
+            # Update UI .env to point to the API tunnel (so browser voice test works over HTTPS)
+            $uiEnvFile = Join-Path $uiDir ".env"
+            if (Test-Path $uiEnvFile) {
+                $uiContent = Get-Content $uiEnvFile -Raw
+                if ($uiContent -match 'NEXT_PUBLIC_API_URL=') {
+                    $uiContent = $uiContent -replace 'NEXT_PUBLIC_API_URL=.*', "NEXT_PUBLIC_API_URL=$tunnelUrl"
                 }
                 else {
-                    Write-Host "Warning: Could not find ACS resource ID" -ForegroundColor Yellow
+                    $uiContent = $uiContent.TrimEnd() + "`nNEXT_PUBLIC_API_URL=$tunnelUrl`n"
                 }
+                if ($uiContent -match 'NEXT_PUBLIC_WS_URL=') {
+                    $uiContent = $uiContent -replace 'NEXT_PUBLIC_WS_URL=.*', "NEXT_PUBLIC_WS_URL=ws://localhost:8000"
+                }
+                else {
+                    $uiContent = $uiContent.TrimEnd() + "`nNEXT_PUBLIC_WS_URL=ws://localhost:8000`n"
+                }
+                Set-Content -Path $uiEnvFile -Value $uiContent -NoNewline
+                Write-Host "Updated NEXT_PUBLIC_API_URL in UI .env" -ForegroundColor Green
+                Write-Host "Updated NEXT_PUBLIC_WS_URL in UI .env" -ForegroundColor Green
             }
-            else {
-                Write-Host "Warning: Could not find ACS configuration. Run 'azd provision' first." -ForegroundColor Yellow
-                Write-Host "Inbound calls will not work until Event Grid is configured." -ForegroundColor Yellow
-            }
+
+            Write-Host "" 
+            Write-Host "NOTE: Inbound calls require an Event Grid subscription" -ForegroundColor Yellow
+            Write-Host "      pointing to: $tunnelUrl/api/calls/inbound" -ForegroundColor Yellow
+            Write-Host "      Configure this in Azure Portal if you need inbound calls locally." -ForegroundColor Yellow
         }
         else {
             Write-Host "Could not capture tunnel URL automatically after $attempts seconds." -ForegroundColor Yellow

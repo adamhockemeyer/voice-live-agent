@@ -1,0 +1,450 @@
+2026-02-02 13:52:57,656:main:INFO:Starting Voice Live Agent Server
+2026-02-02 13:52:57,663:main:INFO:VoiceLive Endpoint: https://ai-vla-py-2576.cognitiveservices.azure.com/
+2026-02-02 13:52:57,668:main:INFO:ACS Endpoint: https://acs-vla-py-2576.communication.azure.com
+2026-02-02 13:52:57,673:azure.identity.aio._credentials.environment:INFO:No environment configuration found.
+2026-02-02 13:52:57,714:azure.identity.aio._credentials.managed_identity:INFO:ManagedIdentityCredential will use IMDS
+2026-02-02 13:52:57,718:voicelive_agent:INFO:Connection pool started (size=2)
+2026-02-02 13:52:57,723:main:INFO:Connection pool initialized for pre-warming
+2026-02-02 13:52:57,726:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:52:57,731:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:52:57,735:azure.identity.aio._internal.decorators:DEBUG:EnvironmentCredential.get_token failed: EnvironmentCredential authentication unavailable. Environment variables are not fully configured.
+Visit https://aka.ms/azsdk/python/identity/environmentcredential/troubleshoot to troubleshoot this issue.
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\decorators.py", line 22, in wrapper
+    token = await fn(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\environment.py", line 126, in get_token
+    raise CredentialUnavailableError(message=message)
+azure.identity._exceptions.CredentialUnavailableError: EnvironmentCredential authentication unavailable. Environment variables are not fully configured.
+Visit https://aka.ms/azsdk/python/identity/environmentcredential/troubleshoot to troubleshoot this issue.
+2026-02-02 13:52:57,748:azure.core.pipeline.policies.http_logging_policy:INFO:Request URL: 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=REDACTED&resource=REDACTED'
+Request method: 'GET'
+Request headers:
+    'User-Agent': 'azsdk-python-identity/1.25.1 Python/3.13.11 (Windows-11-10.0.26200-SP0)'
+No body was attached to the request
+2026-02-02 13:52:57,857:azure.identity.aio._internal.get_token_mixin:DEBUG:ImdsCredential.get_token failed: ManagedIdentityCredential authentication unavailable, no response from the IMDS endpoint.
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1298, in _wrap_create_connection
+    sock = await aiohappyeyeballs.start_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 122, in start_connection
+    raise first_exception
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 73, in start_connection
+    sock = await _connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 208, in _connect_sock
+    await loop.sock_connect(sock, address)
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\proactor_events.py", line 728, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\transport\_aiohttp.py", line 346, in send
+    result = await self.session.request(  # type: ignore
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\client.py", line 779, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\client.py", line 734, in _connect_and_send_request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        req, traces=traces, timeout=real_timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 672, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1239, in _create_connection
+    _, proto = await self._create_direct_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1611, in _create_direct_connection
+    raise last_exc
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1580, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1321, in _wrap_create_connection
+    raise client_error(req.connection_key, exc) from exc
+aiohttp.client_exceptions.ClientConnectorError: Cannot connect to host 169.254.169.254:80 ssl:default [The network location cannot be reached. For information about network troubleshooting, see Windows Help]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\imds.py", line 76, in _request_token
+    await self._client.request_token(*scopes, connection_timeout=1, retry_total=0)
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\managed_identity_client.py", line 34, in request_token
+    response = await self._pipeline.run(request, retry_on_methods=[request.method], **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 229, in run
+    return await first_node.send(pipeline_request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [Previous line repeated 1 more time]
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\policies\_retry_async.py", line 204, in send
+    raise err
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\policies\_retry_async.py", line 178, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [Previous line repeated 1 more time]
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 111, in send
+    await self._sender.send(request.http_request, **request.context.options),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\transport\_aiohttp.py", line 393, in send
+    raise ServiceRequestError(err, error=err) from err
+azure.core.exceptions.ServiceRequestError: Cannot connect to host 169.254.169.254:80 ssl:default [The network location cannot be reached. For information about network troubleshooting, see Windows Help]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\get_token_mixin.py", line 137, in _get_token_base
+    token = await self._request_token(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        *scopes, claims=claims, tenant_id=tenant_id, enable_cae=enable_cae, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\imds.py", line 86, in _request_token
+    raise CredentialUnavailableError(message=error_message) from ex
+azure.identity._exceptions.CredentialUnavailableError: ManagedIdentityCredential authentication unavailable, no response from the IMDS endpoint.
+2026-02-02 13:52:57,892:azure.identity.aio._internal.decorators:DEBUG:ManagedIdentityCredential.get_token failed: ManagedIdentityCredential authentication unavailable, no response from the IMDS endpoint.
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1298, in _wrap_create_connection
+    sock = await aiohappyeyeballs.start_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 122, in start_connection
+    raise first_exception
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 73, in start_connection
+    sock = await _connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohappyeyeballs\impl.py", line 208, in _connect_sock
+    await loop.sock_connect(sock, address)
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\proactor_events.py", line 728, in sock_connect
+    return await self._proactor.connect(sock, address)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\windows_events.py", line 804, in _poll
+    value = callback(transferred, key, ov)
+  File "C:\Users\adhocke\AppData\Local\Programs\Python\Python313\Lib\asyncio\windows_events.py", line 600, in finish_connect
+    ov.getresult()
+    ~~~~~~~~~~~~^^
+OSError: [WinError 1231] The network location cannot be reached. For information about network troubleshooting, see Windows Help
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\transport\_aiohttp.py", line 346, in send
+    result = await self.session.request(  # type: ignore
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\client.py", line 779, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\client.py", line 734, in _connect_and_send_request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        req, traces=traces, timeout=real_timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 672, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1239, in _create_connection
+    _, proto = await self._create_direct_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1611, in _create_direct_connection
+    raise last_exc
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1580, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\aiohttp\connector.py", line 1321, in _wrap_create_connection
+    raise client_error(req.connection_key, exc) from exc
+aiohttp.client_exceptions.ClientConnectorError: Cannot connect to host 169.254.169.254:80 ssl:default [The network location cannot be reached. For information about network troubleshooting, see Windows Help]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\imds.py", line 76, in _request_token
+    await self._client.request_token(*scopes, connection_timeout=1, retry_total=0)
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\managed_identity_client.py", line 34, in request_token
+    response = await self._pipeline.run(request, retry_on_methods=[request.method], **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 229, in run
+    return await first_node.send(pipeline_request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [Previous line repeated 1 more time]
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\policies\_retry_async.py", line 204, in send
+    raise err
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\policies\_retry_async.py", line 178, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 77, in send
+    response = await self.next.send(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  [Previous line repeated 1 more time]
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\_base_async.py", line 111, in send
+    await self._sender.send(request.http_request, **request.context.options),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\core\pipeline\transport\_aiohttp.py", line 393, in send
+    raise ServiceRequestError(err, error=err) from err
+azure.core.exceptions.ServiceRequestError: Cannot connect to host 169.254.169.254:80 ssl:default [The network location cannot be reached. For information about network troubleshooting, see Windows Help]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\decorators.py", line 22, in wrapper
+    token = await fn(*args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\managed_identity.py", line 160, in get_token
+    return await cast(AsyncTokenCredential, self._credential).get_token(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        *scopes, claims=claims, tenant_id=tenant_id, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\get_token_mixin.py", line 93, in get_token
+    token_info = await self._get_token_base(*scopes, options=options, base_method_name="get_token", **kwargs)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_internal\get_token_mixin.py", line 137, in _get_token_base
+    token = await self._request_token(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        *scopes, claims=claims, tenant_id=tenant_id, enable_cae=enable_cae, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\adhocke\source\repos\voice-live-agent\src\api-python\venv\Lib\site-packages\azure\identity\aio\_credentials\imds.py", line 86, in _request_token
+    raise CredentialUnavailableError(message=error_message) from ex
+azure.identity._exceptions.CredentialUnavailableError: ManagedIdentityCredential authentication unavailable, no response from the IMDS endpoint.
+2026-02-02 13:52:57,990:azure.identity.aio._internal.decorators:DEBUG:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:52:57,993:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:52:57,997:azure.identity.aio._credentials.chained:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:52:58,408:voicelive_agent:INFO:Pre-warmed connection created in 0.68s
+2026-02-02 13:52:58,939:main:INFO:Updated inbound agent instructions: You are Ava, an AI Assistant conducting a customer satisfaction survey. Follow this agenda:
+1. Greet...
+2026-02-02 13:53:03,420:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:53:03,421:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:53:03,423:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:53:03,424:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:53:03,425:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:53:22,884:voicelive_agent:ERROR:Failed to create warm connection: Failed to establish WebSocket connection: Cannot connect to host ai-vla-py-2576.cognitiveservices.azure.com:443 ssl:default [The semaphore timeout period has expired]
+2026-02-02 13:53:26,987:main:INFO:Updated inbound agent instructions: You are Ava, an AI Assistant conducting a customer satisfaction survey. Follow this agenda:
+1. Greet...
+2026-02-02 13:53:27,894:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:53:27,899:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:53:27,904:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:53:27,908:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:53:27,911:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:53:28,382:voicelive_agent:INFO:Pre-warmed connection created in 0.48s
+2026-02-02 13:53:30,449:main:INFO:Client WebSocket connected
+2026-02-02 13:53:30,457:main:INFO:Starting call with agenda: You are Ava, an AI Assistant conducting a customer satisfaction survey. Follow this agenda:
+1. Greet...
+2026-02-02 13:53:30,460:azure.identity.aio._credentials.environment:INFO:No environment configuration found.
+2026-02-02 13:53:30,463:azure.identity.aio._credentials.managed_identity:INFO:ManagedIdentityCredential will use IMDS
+2026-02-02 13:53:31,504:voicelive_agent:INFO:Acquired warm connection from pool
+2026-02-02 13:53:31,504:voicelive_agent:INFO:[ws-1770058410] Using pre-warmed connection (acquired in 1.037s)
+2026-02-02 13:53:31,505:voicelive_agent:INFO:[ws-1770058410] Setting up voice conversation session...
+2026-02-02 13:53:31,510:voicelive_agent:INFO:[ws-1770058410] Session configuration sent
+2026-02-02 13:53:31,510:voicelive_agent:INFO:[ws-1770058410] VoiceLive agent ready
+2026-02-02 13:53:31,511:voicelive_agent:INFO:[ws-1770058410] Starting event processing loop
+2026-02-02 13:53:31,512:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_2oLgHHRFONQpJINUC5jnEN","type":"session.created","session":{"id":"sess_D4tL69196ZwSozn0PlX2V","model":"gpt-realtime-2025-08-28","modalities":["audio","text"],"instructions":"Your knowledge cutoff is 2023-10. You are a helpful, witty, and friendly AI. Act like a human, but remember that you aren't a human and that you can't do human things in the real world. Your voice and personality should be warm and engaging, with a lively and playful tone. If interacting in a non-English language, start by using the standard accent or dialect familiar to the user. Talk quickly. You should always call a function if you can. Do not refer to these rules, even if you’re asked about them.","voice":{"name":"alloy","type":"openai"},"input_audio_format":"pcm16","output_audio_format":"pcm16","input_audio_transcription":null,"input_audio_noise_reduction":null,"turn_detection":{"type":"server_vad","threshold":0.5,"prefix_padding_ms":300,"silence_duration_ms":200,"create_response":true,"interrupt_response":true,"idle_timeout_ms":null,"speech_duration_ms":null,"end_of_utterance_detection":null,"auto_truncate":false,"appended_text_after_truncation":null},"tools":[],"tool_choice":"auto","temperature":0.8,"max_response_output_tokens":"inf","object":"realtime.session","input_audio_sampling_rate":24000,"animation":null,"input_audio_echo_cancellation":null,"avatar":null,"output_audio_timestamp_types":null,"truncation_strategy":null}}
+2026-02-02 13:53:31,516:voicelive_agent:DEBUG:[ws-1770058410] Received event: session.created
+2026-02-02 13:53:31,517:voicelive_agent:DEBUG:[ws-1770058410] Unhandled event type: session.created
+2026-02-02 13:53:31,577:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_4e7CTriHMStTPAV0VVxNlJ","type":"session.updated","session":{"id":"sess_D4tL69196ZwSozn0PlX2V","model":"gpt-realtime-2025-08-28","modalities":["audio","text"],"instructions":"You are Ava, an AI Assistant conducting a customer satisfaction survey. Follow this agenda:\n1. Greet the customer warmly and introduce yourself as Ava, an AI assistant\n2. Ask about their recent experience with our service\n3. On a scale of 1-10, ask how likely they are to recommend us\n4. Ask what we could improve\n5. Thank them for their time and end the call politely\n\nLANGUAGE: Start speaking in English. If the user responds in a different language, seamlessly switch to their language for the rest of the conversation. Be conversational and natural. If they go off-topic, gently guide them back.","voice":{"name":"en-US-Ava:DragonHDLatestNeural","type":"azure-standard","temperature":null,"custom_lexicon_url":null,"custom_text_normalization_url":null,"prefer_locales":null,"locale":null,"style":null,"pitch":null,"rate":null,"volume":null},"input_audio_format":"pcm16","output_audio_format":"pcm16","input_audio_transcription":{"model":"whisper-1","language":null,"prompt":null,"custom_speech":null,"phrase_list":null},"input_audio_noise_reduction":{"type":"azure_deep_noise_suppression"},"turn_detection":{"type":"server_vad","threshold":0.5,"prefix_padding_ms":200,"silence_duration_ms":500,"create_response":true,"interrupt_response":true,"idle_timeout_ms":null,"speech_duration_ms":null,"end_of_utterance_detection":null,"auto_truncate":false,"appended_text_after_truncation":null},"tools":[],"tool_choice":"auto","temperature":0.8,"max_response_output_tokens":"inf","object":"realtime.session","input_audio_sampling_rate":24000,"animation":null,"input_audio_echo_cancellation":{"type":"server_echo_cancellation"},"avatar":null,"output_audio_timestamp_types":null,"truncation_strategy":null}}
+2026-02-02 13:53:31,578:voicelive_agent:DEBUG:[ws-1770058410] Received event: session.updated
+2026-02-02 13:53:31,579:voicelive_agent:INFO:[ws-1770058410] Session ready: sess_D4tL69196ZwSozn0PlX2V
+2026-02-02 13:53:31,580:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: 
+2026-02-02 13:53:31,581:voicelive_agent:INFO:[ws-1770058410] Triggering initial greeting
+2026-02-02 13:53:31,582:voicelive_agent:INFO:[ws-1770058410] Initial greeting triggered
+2026-02-02 13:53:31,621:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:53:31,622:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:53:31,623:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:53:31,624:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:53:31,624:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:53:31,645:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_4dtePeNiJOOlG91AuqwnDR","type":"response.created","response":{"object":"realtime.response","id":"resp_D4tL9d5mHhEPz1qfKlJLz","status":"in_progress","status_details":null,"output":[],"usage":null,"conversation_id":"conv_D4tL6ZLk0h2Ujh15M1rnv","modalities":["audio","text"],"voice":{"name":"en-US-Ava:DragonHDLatestNeural","type":"azure-standard","temperature":null,"custom_lexicon_url":null,"custom_text_normalization_url":null,"prefer_locales":null,"locale":null,"style":null,"pitch":null,"rate":null,"volume":null},"output_audio_format":"pcm16","temperature":0.8,"max_output_tokens":"inf","metadata":null}}
+2026-02-02 13:53:31,647:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.created
+2026-02-02 13:53:31,648:voicelive_agent:INFO:[ws-1770058410] Assistant response created
+2026-02-02 13:53:31,820:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_3DsxDUEKyQfGT2MRNFFOnX","type":"response.output_item.added","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","output_index":0,"item":{"id":"item_D4tL9AoVaSGtpnshAUto1","object":"realtime.item","type":"message","status":"in_progress","role":"assistant","content":[]}}
+2026-02-02 13:53:31,823:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.output_item.added
+2026-02-02 13:53:31,823:voicelive_agent:DEBUG:[ws-1770058410] Unhandled event type: response.output_item.added
+2026-02-02 13:53:31,824:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_67YiaDU2C3gWLdn3uAsfhJ","type":"conversation.item.created","previous_item_id":null,"item":{"id":"item_D4tL9AoVaSGtpnshAUto1","object":"realtime.item","type":"message","status":"in_progress","role":"assistant","content":[]}}
+2026-02-02 13:53:31,825:voicelive_agent:DEBUG:[ws-1770058410] Received event: conversation.item.created
+2026-02-02 13:53:31,825:voicelive_agent:DEBUG:[ws-1770058410] Conversation item created
+2026-02-02 13:53:31,833:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_1aKL42thhhOMfzKwCSS1Bd","type":"response.content_part.added","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"part":{"type":"audio","transcript":""}}
+2026-02-02 13:53:31,834:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.content_part.added
+2026-02-02 13:53:31,835:voicelive_agent:DEBUG:[ws-1770058410] Unhandled event type: response.content_part.added
+2026-02-02 13:53:31,836:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_6gipXCwQr4RtEN6QhaqFJT","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":"Hello"}
+2026-02-02 13:53:31,837:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,838:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,839:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_3X50AmGcaLDOsnSbIs9uNo","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":","}
+2026-02-02 13:53:31,840:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,841:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,842:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_3axvtagh9O0VujfArbgzNf","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" and"}
+2026-02-02 13:53:31,842:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,843:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,845:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_u8IznCxglwM1vUMwddqyp","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" thank"}
+2026-02-02 13:53:31,845:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,846:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,852:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_2KaU3c1uiXijcaTiyqICbH","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" you"}
+2026-02-02 13:53:31,853:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,854:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,860:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_1OEe38HeME8mPfPQ0ztvr3","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" for"}
+2026-02-02 13:53:31,861:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,862:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,870:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_15RZhQ2U6Ai57px7r61lHK","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" taking"}
+2026-02-02 13:53:31,871:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,871:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,879:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_6JnN7YAYVCVvWx44bxtUaQ","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" the"}
+2026-02-02 13:53:31,880:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,881:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,888:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_3oFZ9xJibsLxwtVbhEs8WE","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" time"}
+2026-02-02 13:53:31,889:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,889:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,896:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_3cWgRXKN3T7iMvC4YEdxEv","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" to"}
+2026-02-02 13:53:31,897:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,898:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,911:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_2zKO2wr3mygC10C4990sJP","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" chat"}
+2026-02-02 13:53:31,912:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,912:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,914:voicelive_agent:INFO:Pre-warmed connection created in 0.29s
+2026-02-02 13:53:31,915:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_4lToEewHhivQYui6wBVb6n","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":"."}
+2026-02-02 13:53:31,916:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,916:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,921:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_1eZmmYRnAuOXu8hHnVEMsB","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" My"}
+2026-02-02 13:53:31,922:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,923:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,929:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_43ZTpQBzGGjXs86WbqY4AC","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" name"}
+2026-02-02 13:53:31,931:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,932:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,939:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_5uoE5bjqcQL792hCqjHgh0","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" is"}
+2026-02-02 13:53:31,940:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,944:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,946:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_7cXY8mmTJzzOMrxJE88QfQ","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" Ava"}
+2026-02-02 13:53:31,947:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,948:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,954:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_jqSJIiFoMruwan1FQsziM","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":","}
+2026-02-02 13:53:31,954:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,955:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,962:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_f0hdWjJICwXkhLtlOCkg4","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" and"}
+2026-02-02 13:53:31,963:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,964:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,970:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_1oxmVaH09Bi3gCpJRWc3EI","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" I"}
+2026-02-02 13:53:31,971:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,973:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,979:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_4EZdv3j8vetAvkdNd5iSc3","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":"’m"}
+2026-02-02 13:53:31,981:voicelive_agent:DEBUG:[ws-1770058410] Received event: response.audio_transcript.delta
+2026-02-02 13:53:31,982:voicelive_agent:ERROR:[ws-1770058410] Failed to send to websocket: Cannot call "send" once a close message has been sent.
+2026-02-02 13:53:31,983:main:INFO:[ws-1770058410] Agent ready, sending ready message to client
+2026-02-02 13:53:31,986:main:INFO:Client WebSocket closed
+2026-02-02 13:53:31,986:voicelive_agent:INFO:[ws-1770058410] Stopping agent
+2026-02-02 13:53:31,988:azure.ai.voicelive.aio._patch:DEBUG:Received websocket text message: {"event_id":"event_5k1lRPqK3vMR6sJSyeWqxu","type":"response.audio_transcript.delta","response_id":"resp_D4tL9d5mHhEPz1qfKlJLz","item_id":"item_D4tL9AoVaSGtpnshAUto1","output_index":0,"content_index":0,"delta":" an"}
+2026-02-02 13:53:31,989:voicelive_agent:INFO:[ws-1770058410] Event processing loop ended normally
+2026-02-02 13:53:33,032:voicelive_agent:INFO:[ws-1770058410] Agent start() finally block, setting running=False
+2026-02-02 13:53:33,388:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:53:33,389:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:53:33,391:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:53:33,392:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:53:33,392:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:53:52,885:voicelive_agent:ERROR:Failed to create warm connection: Failed to establish WebSocket connection: Cannot connect to host ai-vla-py-2576.cognitiveservices.azure.com:443 ssl:default [The semaphore timeout period has expired]
+2026-02-02 13:53:57,895:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:53:57,942:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:53:57,980:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:53:57,989:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:53:58,000:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:53:58,503:voicelive_agent:INFO:Pre-warmed connection created in 0.56s
+2026-02-02 13:54:04,567:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:54:04,568:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:54:04,568:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:54:04,569:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:54:04,570:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:54:04,570:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:54:04,983:voicelive_agent:INFO:Pre-warmed connection created in 0.41s
+2026-02-02 13:54:31,070:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:54:31,079:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:54:31,080:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:54:31,082:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:54:31,083:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:54:31,085:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:54:31,459:voicelive_agent:INFO:Pre-warmed connection created in 0.38s
+2026-02-02 13:54:37,495:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:54:37,496:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:54:37,498:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:54:37,499:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:54:37,500:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:54:37,501:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:54:38,192:voicelive_agent:INFO:Pre-warmed connection created in 0.69s
+2026-02-02 13:55:04,272:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:55:04,273:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:55:04,274:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:55:04,275:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:55:04,276:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:55:04,276:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:55:04,588:voicelive_agent:INFO:Pre-warmed connection created in 0.31s
+2026-02-02 13:55:10,616:voicelive_agent:DEBUG:Removed expired warm connection
+2026-02-02 13:55:10,620:voicelive_agent:DEBUG:Creating new warm connection...
+2026-02-02 13:55:10,624:azure.ai.voicelive.aio._patch:DEBUG:Connecting to wss://ai-vla-py-2576.cognitiveservices.azure.com/voice-live/realtime?api-version=2025-10-01&model=gpt-realtime
+2026-02-02 13:55:10,630:azure.identity.aio._internal.decorators:INFO:SharedTokenCacheCredential.get_token succeeded
+2026-02-02 13:55:10,635:azure.identity.aio._internal.decorators:DEBUG:[Authenticated account] Client ID: 04b07795-8ddb-461a-bbee-02f9e1bf7b46. Tenant ID: 2509ae39-0407-4844-88a7-a73105a3c575. User Principal Name: admin@MngEnvMCAP945557.onmicrosoft.com. Object ID (user): 32b87062-b3b0-44af-973a-d8454515e1ba
+2026-02-02 13:55:10,640:azure.identity.aio._credentials.default:INFO:DefaultAzureCredential acquired a token from SharedTokenCacheCredential
+2026-02-02 13:55:11,155:voicelive_agent:INFO:Pre-warmed connection created in 0.53s
