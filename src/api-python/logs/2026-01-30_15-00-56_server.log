@@ -1,4 +1,0 @@
-2026-01-30 15:00:56,641:main:INFO:Starting Voice Live Agent Server
-2026-01-30 15:00:56,642:main:INFO:VoiceLive Endpoint: https://ai-vla-py-2576.cognitiveservices.azure.com/
-2026-01-30 15:00:56,643:main:INFO:ACS Endpoint: https://acs-vla-py-2576.communication.azure.com
-2026-01-30 15:03:39,214:main:INFO:Shutting down - cleaning up active calls
