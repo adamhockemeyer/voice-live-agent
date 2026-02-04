@@ -2,6 +2,8 @@
 
 A demo application showcasing **real-time AI voice conversations** over the phone using Azure services. Call a phone number and talk to an AI agent powered by GPT-4o Realtime, or have the AI call you.
 
+![Voice Live Agent UI](images/ui.png)
+
 ## What This Demo Does
 
 This application demonstrates:
