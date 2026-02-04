@@ -13,6 +13,12 @@ param location string
 @description('Location for the OpenAI resource')
 param openAiLocation string = 'eastus2'
 
+@description('Whether the API container app already exists')
+param apiAppExists bool = false
+
+@description('Whether the UI container app already exists')
+param uiAppExists bool = false
+
 @description('GPT model name for realtime voice')
 param gptRealtimeModelName string = 'gpt-4o-realtime-preview'
 
@@ -111,20 +117,20 @@ module uiIdentity 'modules/managed-identity.bicep' = {
 }
 
 // API Container App (Python with VoiceLive SDK)
-module apiContainerApp 'modules/container-app.bicep' = {
+module apiContainerApp 'modules/container-app-upsert.bicep' = {
   name: 'api-container-app'
   scope: rg
   params: {
     name: 'ca-api-${environmentName}'
     location: location
     tags: union(tags, { 'azd-service-name': 'api' })
-    containerAppsEnvironmentId: containerAppsEnvironment.outputs.id
-    containerImage: '${containerRegistry.outputs.loginServer}/api:latest'
+    containerAppsEnvironmentName: containerAppsEnvironment.outputs.name
+    containerRegistryName: containerRegistry.outputs.name
+    containerImage: 'mcr.microsoft.com/azuredocs/aci-helloworld:latest'
     identityType: 'UserAssigned'
-    userAssignedIdentities: {
-      '${apiIdentity.outputs.id}': {}
-    }
+    identityName: apiIdentity.outputs.name
     targetPort: 8000
+    exists: apiAppExists
     registries: [
       {
         server: containerRegistry.outputs.loginServer
@@ -161,30 +167,27 @@ module apiContainerApp 'modules/container-app.bicep' = {
         value: apiIdentity.outputs.clientId
       }
     ]
-    secrets: []
   }
-  // Note: CALLBACK_URI will be set after deployment via azd hooks or app settings update
-  // since it requires the container app's FQDN which creates a circular dependency
   dependsOn: [
     apiRoleAssignments
   ]
 }
 
 // UI Container App (Next.js frontend)
-module uiContainerApp 'modules/container-app.bicep' = {
+module uiContainerApp 'modules/container-app-upsert.bicep' = {
   name: 'ui-container-app'
   scope: rg
   params: {
     name: 'ca-ui-${environmentName}'
     location: location
     tags: union(tags, { 'azd-service-name': 'ui' })
-    containerAppsEnvironmentId: containerAppsEnvironment.outputs.id
-    containerImage: '${containerRegistry.outputs.loginServer}/ui:latest'
+    containerAppsEnvironmentName: containerAppsEnvironment.outputs.name
+    containerRegistryName: containerRegistry.outputs.name
+    containerImage: 'mcr.microsoft.com/azuredocs/aci-helloworld:latest'
     identityType: 'UserAssigned'
-    userAssignedIdentities: {
-      '${uiIdentity.outputs.id}': {}
-    }
+    identityName: uiIdentity.outputs.name
     targetPort: 3000
+    exists: uiAppExists
     registries: [
       {
         server: containerRegistry.outputs.loginServer
@@ -201,7 +204,6 @@ module uiContainerApp 'modules/container-app.bicep' = {
         value: uiIdentity.outputs.clientId
       }
     ]
-    secrets: []
   }
   dependsOn: [
     uiRoleAssignments
@@ -243,6 +245,7 @@ module uiRoleAssignments 'modules/role-assignments.bicep' = {
 }
 
 // Event Grid for incoming call routing
+// Note: Event subscription is created in postprovision hook to ensure API is ready for webhook validation
 module eventGrid 'modules/event-grid.bicep' = {
   name: 'event-grid'
   scope: rg

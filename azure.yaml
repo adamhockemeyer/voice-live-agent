@@ -8,13 +8,15 @@ services:
     project: ./src/api-python
     language: py
     host: containerapp
-    build: remote
+    docker:
+      remoteBuild: true
 
   ui:
     project: ./src/ui
     language: ts
     host: containerapp
-    build: remote
+    docker:
+      remoteBuild: true
 
 infra:
   provider: bicep
@@ -28,3 +30,10 @@ hooks:
     posix:
       shell: sh
       run: ./hooks/postprovision.sh
+  postdeploy:
+    windows:
+      shell: pwsh
+      run: ./hooks/postdeploy.ps1
+    posix:
+      shell: sh
+      run: ./hooks/postdeploy.sh

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CallLogs } from '@/components/CallLogs';
 import { TranscriptPanel } from '@/components/TranscriptPanel';
 import { useAgentTypes } from '@/components/useAgentTypes';
@@ -24,6 +24,38 @@ interface ActiveCall {
   start_time: string;
 }
 
+interface DebugState {
+  timestamp: string;
+  active_calls: Record<string, unknown>;
+  orphaned_agents: string[];
+  orphaned_websockets: string[];
+  pending_cleanups: string[];
+  transcript_call_ids: string[];
+  connection_pool: unknown;
+}
+
+// SSE Event types from backend
+interface SSECallEvent {
+  type: 'call_created' | 'call_status' | 'call_removed';
+  call: {
+    call_id: string;
+    status: string;
+    direction: string;
+    phone_number: string;
+    start_time: string;
+  };
+}
+
+interface SSETranscriptEvent {
+  type: 'transcript';
+  callId: string;
+  role: string;
+  text: string;
+  partial: boolean;
+}
+
+type SSEEvent = SSECallEvent | SSETranscriptEvent;
+
 export default function Home() {
   const [callId, setCallId] = useState<string | null>(null);
   const [isCallActive, setIsCallActive] = useState(false);
@@ -40,6 +72,16 @@ export default function Home() {
   const [inboundAgentTypeId, setInboundAgentTypeId] = useState<string>('customer_satisfaction');
   const [activeTab, setActiveTab] = useState<'outbound' | 'inbound'>('outbound');
   const [currentPhoneNumber, setCurrentPhoneNumber] = useState<string>('');
+  const [showDebug, setShowDebug] = useState(false);
+  const [debugState, setDebugState] = useState<DebugState | null>(null);
+  
+  // Ref to track current call ID for SSE handler (avoids stale closure)
+  const callIdRef = useRef<string | null>(null);
+  
+  // Keep callIdRef in sync with callId state
+  useEffect(() => {
+    callIdRef.current = callId;
+  }, [callId]);
 
   const {
     agentTypes,
@@ -130,60 +172,140 @@ export default function Home() {
   // Fetch config when API URL is loaded
   useEffect(() => {
     if (!apiUrlLoaded) return;
-    console.log('Fetching config from:', apiUrl);
+    console.log('[UI] Fetching config from:', apiUrl);
     fetch(`${apiUrl}/api/config`)
       .then(res => res.json())
       .then(data => {
-        console.log('Config received:', data);
+        console.log('[UI] Config received:', data);
         setConfig(data);
       })
-      .catch(err => console.error('Failed to fetch config:', err));
+      .catch(err => console.error('[UI] Failed to fetch config:', err));
   }, [apiUrlLoaded, apiUrl]);
 
-  // Poll for active inbound calls
+  // Fetch debug state when debug panel is open
+  useEffect(() => {
+    if (!showDebug || !apiUrlLoaded) return;
+    
+    const fetchDebug = async () => {
+      try {
+        const res = await fetch(`${apiUrl}/api/debug/state`);
+        if (res.ok) {
+          setDebugState(await res.json());
+        }
+      } catch (err) {
+        console.error('[UI] Failed to fetch debug state:', err);
+      }
+    };
+    
+    fetchDebug();
+    const interval = setInterval(fetchDebug, 2000);
+    return () => clearInterval(interval);
+  }, [showDebug, apiUrlLoaded, apiUrl]);
+
+  // SSE connection for real-time call events and transcripts
   useEffect(() => {
     if (!apiUrlLoaded) return;
 
-    const pollCalls = async () => {
-      try {
-        const res = await fetch(`${apiUrl}/api/calls`);
-        const data = await res.json();
-        const inbound = (data.calls || []).filter((c: ActiveCall) => c.direction === 'inbound');
+    console.log('[UI] Connecting to SSE event stream');
+    const eventSource = new EventSource(`${apiUrl}/api/events/stream`);
 
-        // Check for new inbound calls and auto-subscribe to transcripts
-        inbound.forEach((call: ActiveCall) => {
-          if (!callId || callId !== call.call_id) {
-            // New inbound call detected - set it as active and subscribe
+    eventSource.onmessage = (event) => {
+      try {
+        const data: SSEEvent = JSON.parse(event.data);
+        console.log('[UI] SSE event:', data.type, data);
+
+        switch (data.type) {
+          case 'call_created': {
+            const call = (data as SSECallEvent).call;
+            console.log('[UI] Call created:', call.call_id, call.direction);
             setCallId(call.call_id);
             setIsCallActive(true);
-            setCallDirection('inbound');
+            setIsCallingPhone(call.direction === 'outbound');
+            setCallDirection(call.direction as 'inbound' | 'outbound');
             setCurrentPhoneNumber(call.phone_number || '');
             setTranscripts([]);
-            setActiveTab('inbound');
-            subscribeToTranscripts(call.call_id);
+            if (call.direction === 'inbound') {
+              setActiveTab('inbound');
+            }
+            // Update inbound calls list
+            if (call.direction === 'inbound') {
+              setInboundCalls(prev => {
+                const exists = prev.some(c => c.call_id === call.call_id);
+                if (exists) return prev;
+                return [...prev, call];
+              });
+            }
+            break;
           }
-        });
 
-        setInboundCalls(inbound);
+          case 'call_status': {
+            const call = (data as SSECallEvent).call;
+            const currentCallId = callIdRef.current;
+            console.log('[UI] Call status update:', call.call_id, call.status, 'current:', currentCallId);
+            
+            if (call.call_id === currentCallId) {
+              if (call.status === 'connected') {
+                setIsCallActive(true);
+              } else if (call.status === 'ended') {
+                console.log('[UI] Call ended via SSE');
+                setIsCallActive(false);
+                setIsCallingPhone(false);
+                // Keep callId for a moment so UI can show ended state
+                setTimeout(() => {
+                  if (callIdRef.current === call.call_id) {
+                    setCallId(null);
+                    setCallDirection(null);
+                  }
+                }, 2000);
+              }
+            }
+            // Update inbound calls list
+            setInboundCalls(prev => prev.map(c => 
+              c.call_id === call.call_id ? { ...c, status: call.status } : c
+            ));
+            break;
+          }
 
-        // Check if our active call has ended (not in the list anymore)
-        if (callId && isCallingPhone) {
-          const ourCall = (data.calls || []).find((c: ActiveCall) => c.call_id === callId);
-          if (!ourCall) {
-            // Call ended from the other side
-            setIsCallingPhone(false);
-            setIsCallActive(false);
+          case 'call_removed': {
+            const call = (data as SSECallEvent).call;
+            const currentCallId = callIdRef.current;
+            console.log('[UI] Call removed:', call.call_id, 'current:', currentCallId);
+            
+            if (call.call_id === currentCallId) {
+              setCallId(null);
+              setCallDirection(null);
+              setIsCallActive(false);
+              setIsCallingPhone(false);
+            }
+            // Remove from inbound calls list
+            setInboundCalls(prev => prev.filter(c => c.call_id !== call.call_id));
+            break;
+          }
+
+          case 'transcript': {
+            const transcript = data as SSETranscriptEvent;
+            const currentCallId = callIdRef.current;
+            if (transcript.callId === currentCallId && !transcript.partial) {
+              setTranscripts(prev => [...prev, { role: transcript.role, text: transcript.text }]);
+            }
+            break;
           }
         }
       } catch (err) {
-        console.error('Failed to fetch calls:', err);
+        console.error('[UI] Failed to parse SSE event:', err);
       }
     };
 
-    pollCalls();
-    const interval = setInterval(pollCalls, 2000);
-    return () => clearInterval(interval);
-  }, [apiUrl, apiUrlLoaded, callId, isCallingPhone]);
+    eventSource.onerror = (err) => {
+      console.error('[UI] SSE connection error:', err);
+      // EventSource will auto-reconnect
+    };
+
+    return () => {
+      console.log('[UI] Closing SSE connection');
+      eventSource.close();
+    };
+  }, [apiUrl, apiUrlLoaded]);
 
   const startPhoneCall = async () => {
     if (!phoneNumber.trim()) {
@@ -191,9 +313,11 @@ export default function Home() {
       return;
     }
 
+    console.log('[UI] Starting phone call to:', phoneNumber);
+    
     setPhoneCallError(null);
     setIsCallingPhone(true);
-    setTranscripts([]);
+    setTranscripts([]);  // Fresh transcripts for new call
     setCallDirection('outbound');
     setCurrentPhoneNumber(phoneNumber);
 
@@ -210,67 +334,38 @@ export default function Home() {
       const data = await response.json();
 
       if (data.success && data.call_id) {
+        console.log('[UI] Call started successfully:', data.call_id);
+        // Note: SSE event stream will handle setting callId and isCallActive
+        // when the call_created event arrives
         setCallId(data.call_id);
         setIsCallActive(true);
-
-        // Subscribe to SSE for real-time transcripts
-        subscribeToTranscripts(data.call_id);
       } else {
+        console.error('[UI] Call failed:', data);
         setPhoneCallError(data.detail || data.message || 'Failed to start call');
         setIsCallingPhone(false);
         setCallDirection(null);
       }
     } catch (err) {
+      console.error('[UI] Call request failed:', err);
       setPhoneCallError(`Failed to connect: ${err}`);
       setIsCallingPhone(false);
       setCallDirection(null);
     }
   };
 
-  const subscribeToTranscripts = (callIdToSubscribe: string) => {
-    const eventSource = new EventSource(`${apiUrl}/api/calls/${callIdToSubscribe}/transcripts/stream`);
-
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'call_ended') {
-          eventSource.close();
-          return;
-        }
-        if (data.role && data.text && !data.partial) {
-          setTranscripts(prev => [...prev, { role: data.role, text: data.text }]);
-        }
-      } catch (err) {
-        console.error('Failed to parse transcript:', err);
-      }
-    };
-
-    eventSource.onerror = () => {
-      eventSource.close();
-    };
-
-    // Store reference for cleanup
-    (window as unknown as Record<string, EventSource>)[`transcriptSource_${callIdToSubscribe}`] = eventSource;
-  };
-
   const hangupPhoneCall = async () => {
     if (!callId) return;
-
-    // Close transcript EventSource if it exists
-    const eventSourceKey = `transcriptSource_${callId}`;
-    const eventSource = (window as unknown as Record<string, EventSource>)[eventSourceKey];
-    if (eventSource) {
-      eventSource.close();
-      delete (window as unknown as Record<string, EventSource>)[eventSourceKey];
-    }
 
     try {
       await fetch(`${apiUrl}/api/calls/${callId}/hangup`, { method: 'POST' });
     } catch (err) {
       console.error('Hangup error:', err);
     }
+    // Reset all call state (SSE will also send call_status:ended, but we update immediately for responsiveness)
     setIsCallingPhone(false);
     setIsCallActive(false);
+    setCallId(null);
+    setCallDirection(null);
   };
 
   return (
@@ -563,6 +658,37 @@ export default function Home() {
               <CallLogs callId={callId} />
             </div>
           </div>
+        </div>
+
+        {/* Debug Panel - Collapsible at bottom */}
+        <div className="mt-6">
+          <button
+            onClick={() => setShowDebug(!showDebug)}
+            className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 flex items-center gap-1"
+          >
+            🔧 {showDebug ? 'Hide' : 'Show'} Debug Panel
+          </button>
+          {showDebug && (
+            <div className="mt-2 bg-gray-900 rounded-lg p-4 overflow-auto max-h-64">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs text-gray-400">
+                  Backend State (refreshes every 2s)
+                </span>
+                <span className="text-xs text-gray-500">
+                  UI Call ID: {callId ? callId.substring(0, 8) + '...' : 'none'} | 
+                  Active: {isCallActive ? 'yes' : 'no'} | 
+                  Calling: {isCallingPhone ? 'yes' : 'no'}
+                </span>
+              </div>
+              {debugState ? (
+                <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap">
+                  {JSON.stringify(debugState, null, 2)}
+                </pre>
+              ) : (
+                <p className="text-xs text-gray-500">Loading...</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </main>

@@ -1,195 +1,200 @@
-# AZD Deployment Readiness Review
+# Azure Deployment Guide
 
-## ✅ NOW READY FOR `azd up`
+Deploy Voice Live Agent to Azure using the Azure Developer CLI (`azd`).
 
-All issues have been fixed. Here's the complete status:
+## Prerequisites
 
-### **Dockerfiles**
-- ✅ **API (Python)**: `src/api-python/Dockerfile` - Correctly builds Python app with FastAPI
-- ✅ **UI (Next.js)**: `src/ui/Dockerfile` - Correctly uses multi-stage build for optimized container
+- [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
+- Azure subscription with permissions to create resources
+- Access to Azure AI Services (GPT-4o Realtime model)
 
-### **Infrastructure (Bicep)**
-- ✅ **Container Registry**: New ACR module created to store built container images
-- ✅ **All Modules**: Properly structured with AI Services, ACS, Storage, Event Grid, etc.
-- ✅ **Environment Variables**: All config passed to Container Apps including storage connection string
-- ✅ **Recording**: Call recording infrastructure fully configured with storage
+## Quick Deploy
 
-### **Azure Developer CLI (azd)**
-- ✅ **azure.yaml**: Correctly configured with services pointing to Dockerfiles
-- ✅ **Image References**: Updated to use ACR `${containerRegistry.outputs.loginServer}/api:latest` and `ui:latest`
-- ✅ **Post-Provision Scripts**: Both PowerShell and Bash updated to set all required env vars
-
----
-
-## **Deployment Process**
-
-### **First-Time Deployment: `azd up`**
-
-```powershell
-# From project root
+```bash
 azd up
-
-# What happens:
-# 1. azd builds Docker images for api/ and ui/
-# 2. azd pushes images to the new ACR
-# 3. azd deploys Bicep infrastructure
-# 4. Bicep creates all resources with ACR image references
-# 5. Post-provision script runs automatically
-#    - Sets CALLBACK_URI on container app
-#    - Sets AZURE_STORAGE_CONNECTION_STRING on container app
-#    - Creates local .env files for development
 ```
 
-### **After Successful Deployment**
+That's it! This single command:
+1. Builds Docker images for the API and UI
+2. Pushes images to Azure Container Registry
+3. Deploys all infrastructure via Bicep
+4. Configures environment variables automatically
 
-The postprovision script will output:
+**Deployment takes ~10-15 minutes.**
+
+---
+
+## What Gets Created
+
 ```
-Phone Number: Not configured (see instructions below)
+Resource Group: rg-{environment}
+├── Azure AI Services (GPT-4o Realtime)
+├── Azure Communication Services
+├── Azure Container Registry
+├── Azure Storage Account
+├── Container Apps Environment
+├── API Container App (Python/FastAPI)
+├── UI Container App (Next.js)
+└── Event Grid (incoming call routing)
 ```
 
 ---
 
-## **Phone Number Setup (Manual Step)**
+## After Deployment
 
-After `azd up` completes, purchase a phone number:
+### 1. Purchase a Phone Number
+
+The only manual step - buy a phone number for incoming/outgoing calls:
 
 1. Go to [Azure Portal](https://portal.azure.com)
-2. Navigate to: **Communication Services** → `acs-{environment-name}` → **Phone Numbers**
-3. Click **Get** and purchase a toll-free number with **Voice capabilities** enabled
-4. Copy the phone number (e.g., `+1-XXX-XXX-XXXX`)
+2. Navigate to: **Communication Services** → your ACS resource → **Phone Numbers**
+3. Click **Get** → Select a toll-free number with **Voice (inbound/outbound)** capability
+4. Complete the purchase
 
-### **Option A: Update via Portal UI**
-1. Go to: Container Apps → `ca-api-{environment-name}` → **Environment variables**
-2. Edit `ACS_PHONE_NUMBER` and paste the phone number
-3. Click **Save** (container restarts with new value)
+**That's it!** The API automatically discovers purchased phone numbers - no configuration needed.
 
-### **Option B: Update via CLI**
-```powershell
-# Replace with your actual values
-$phoneNumber = "+1-XXX-XXX-XXXX"
-$resourceGroup = "rg-{environment-name}"
-$containerApp = "ca-api-{environment-name}"
+### 2. Access Your App
 
-az containerapp update `
-    --name $containerApp `
-    --resource-group $resourceGroup `
-    --set-env-vars "ACS_PHONE_NUMBER=$phoneNumber" `
-    --output none
+After deployment, `azd` outputs the URLs:
 
-echo "Updated ACS_PHONE_NUMBER to $phoneNumber"
+```
+UI:  https://ca-ui-{env}.{region}.azurecontainerapps.io
+API: https://ca-api-{env}.{region}.azurecontainerapps.io
 ```
 
-### **Option C: Redeploy with azd**
-After purchasing the number:
-1. Update `.env` file in your environment (`.azure/{env-name}/.env`)
-2. Or update the Bicep if you want it persisted in IaC
-3. Run `azd deploy` to redeploy without reprovisioning
+Open the UI URL, enter a phone number, and click Call!
 
 ---
 
-## **Container App Environment Variables**
+## Environment Variables
 
-**Automatically Set by Bicep:**
-- `AZURE_VOICELIVE_ENDPOINT` - AI Services endpoint
-- `AZURE_VOICELIVE_MODEL` - gpt-realtime
-- `AZURE_VOICELIVE_VOICE` - en-US-Ava:DragonHDLatestNeural
-- `AZURE_COMMUNICATION_ENDPOINT` - ACS endpoint
-- `AZURE_STORAGE_CONNECTION_STRING` - Blob storage connection
-- `PORT` - 8000
+All environment variables are set automatically by deployment:
 
-**Set by Post-Provision Script:**
-- `CALLBACK_URI` - Public FQDN for webhooks (e.g., `https://ca-api-xyz.xyz.azurecontainerapps.io`)
+| Variable | Source | Description |
+|----------|--------|-------------|
+| `AZURE_VOICELIVE_ENDPOINT` | Bicep | AI Services endpoint |
+| `AZURE_VOICELIVE_MODEL` | Bicep | gpt-4o-realtime-preview |
+| `AZURE_VOICELIVE_VOICE` | Bicep | Neural voice model |
+| `AZURE_COMMUNICATION_ENDPOINT` | Bicep | ACS endpoint |
+| `AZURE_STORAGE_ACCOUNT_NAME` | Bicep | Storage for recordings |
+| `CALLBACK_URI` | Post-provision | Container App FQDN |
 
-**Manual/After Deployment:**
-- `ACS_PHONE_NUMBER` - Phone number for incoming calls
+**Phone numbers are discovered automatically** from your ACS resource at runtime.
 
 ---
 
-## **How It All Works Together**
+## Deployment Commands
+
+| Command | Description |
+|---------|-------------|
+| `azd up` | Full deployment (provision + deploy) |
+| `azd provision` | Deploy infrastructure only |
+| `azd deploy` | Deploy code only (after provision) |
+| `azd down` | Delete all resources |
+
+### Redeploy After Code Changes
+
+```bash
+azd deploy
+```
+
+### View Logs
+
+```bash
+az containerapp logs show -n ca-api-{env} -g rg-{env} --follow
+```
+
+---
+
+## Troubleshooting
+
+### Container won't start
+```bash
+# Check logs
+az containerapp logs show -n ca-api-{env} -g rg-{env}
+
+# Verify image exists
+az acr repository list --name acr{env}
+```
+
+### Phone calls not working
+- Verify you purchased a phone number in ACS
+- Check CALLBACK_URI is the Container App's public URL
+- Ensure the phone number has voice capability enabled
+
+### Webhooks failing
+- CALLBACK_URI must be HTTPS and publicly accessible
+- Check Event Grid subscription exists in ACS resource
+
+### Recording not working
+- Verify managed identity has Storage Blob Data Contributor role
+- Check "recordings" container exists in storage account
+
+---
+
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────┐
 │ azd up                                               │
-│ ├─ Builds Docker images for api/ & ui/             │
-│ ├─ Pushes to ACR                                    │
-│ └─ Deploys Infrastructure                           │
-│    ├─ Creates Container Apps                       │
-│    ├─ References ACR images                        │
-│    └─ Creates all supporting resources             │
+│ ├─ Builds Docker images                             │
+│ ├─ Pushes to Azure Container Registry               │
+│ └─ Deploys Bicep infrastructure                     │
 └─────────────────────────────────────────────────────┘
           ↓
 ┌─────────────────────────────────────────────────────┐
-│ Post-Provision Script (Auto-runs)                   │
-│ ├─ Sets CALLBACK_URI on API container app          │
-│ ├─ Sets AZURE_STORAGE_CONNECTION_STRING            │
-│ └─ Creates local .env files                        │
+│ Post-Provision Script (runs automatically)          │
+│ ├─ Sets CALLBACK_URI on API container               │
+│ └─ Creates local .env files for development         │
 └─────────────────────────────────────────────────────┘
           ↓
 ┌─────────────────────────────────────────────────────┐
-│ Deployment Complete ✅                              │
-│ ├─ API running at https://ca-api-{env}.{region}   │
-│ │  azurecontainerapps.io                           │
-│ ├─ UI running at https://ca-ui-{env}.{region}    │
-│ │  azurecontainerapps.io                           │
-│ └─ Ready for incoming calls (after phone number)   │
+│ Deployment Complete ✅                               │
+│ ├─ API: https://ca-api-{env}.{region}...            │
+│ ├─ UI:  https://ca-ui-{env}.{region}...             │
+│ └─ Ready! Just buy a phone number.                  │
 └─────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## **What Happens During Recording**
+## Cost Estimates
 
-When a call connects:
-1. ACS Call Recording API starts recording
-2. Audio is stored in `recordings/{call_id}_{timestamp}.wav`
-3. Managed identity automatically has permissions via Bicep role assignments
-4. When call ends, recording stops and SAS URL can be generated
-
-Access recording:
-```
-GET /api/calls/{call_id}/recording
-```
-
-Returns:
-```json
-{
-  "callId": "call-123",
-  "recordingUrl": "https://st{env}.blob.core.windows.net/recordings/call-123_20260202_120000.wav?sv=...",
-  "status": "completed",
-  "message": "Recording available for download"
-}
-```
+| Service | Estimated Cost |
+|---------|---------------|
+| Container Registry | ~$5/month (Basic) |
+| Container Apps | ~$0.04/vCPU-hour |
+| Storage | ~$0.02/GB/month |
+| Communication Services | ~$0.013/min (toll-free) |
+| Azure OpenAI Realtime | ~$0.06-0.24/min |
 
 ---
 
-## **Troubleshooting**
+## Local Development After Provision
 
-### **Containers won't start after deployment**
-1. Check container logs: `az containerapp logs show -n ca-api-{env} -g rg-{env}`
-2. Verify image exists in ACR: `az acr repository list --name acr{env}`
-3. Check env vars are set: `az containerapp show -n ca-api-{env} -g rg-{env}`
+If you want to run locally but use Azure backend services:
 
-### **CALLBACK_URI errors**
-- If webhooks fail, check that CALLBACK_URI is set to the Container App FQDN
-- Port must be 443 (HTTPS)
+```bash
+# Deploy infrastructure only
+azd provision
 
-### **Phone calls not routing**
-- Verify ACS_PHONE_NUMBER is set
-- Check Event Grid subscription exists for incoming calls
-- Verify webhook is accessible (CALLBACK_URI)
+# The post-provision script creates .env files automatically
 
-### **Recording not working**
-- Check storage connection string is set
-- Verify managed identity has Storage Blob Contributor role
-- Ensure "recordings" container exists in storage account
+# Run API locally
+cd src/api-python
+pip install -r requirements.txt
+python main.py
 
----
+# Run UI locally (separate terminal)
+cd src/ui
+npm install
+npm run dev
+```
 
-## **Next Steps**
+For phone calls to work locally, you need a public URL for webhooks. Use [Azure Dev Tunnels](https://learn.microsoft.com/azure/developer/dev-tunnels/):
 
-1. ✅ Run: `azd up`
-2. ⏳ Wait for deployment (~10-15 minutes)
-3. 📞 Purchase phone number via Portal
-4. 📱 Set `ACS_PHONE_NUMBER` env var via Portal or CLI
-5. 🎉 Make test calls!
+```bash
+devtunnel host --port-numbers 8000 --allow-anonymous
+# Update CALLBACK_URI in .env with the tunnel URL
+```
 

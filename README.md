@@ -1,276 +1,230 @@
 # Voice Live Agent
 
-A sample Azure application demonstrating real-time voice conversations using the **Azure VoiceLive SDK** with the GPT-Realtime model. Supports both WebSocket-based voice calls and Azure Communication Services (ACS) Call Automation for real phone calls.
+A demo application showcasing **real-time AI voice conversations** over the phone using Azure services. Call a phone number and talk to an AI agent powered by GPT-4o Realtime, or have the AI call you.
 
-## Features
+## What This Demo Does
 
-- **Azure VoiceLive SDK**: Uses the official `azure.ai.voicelive` Python SDK for voice AI
-- **Real-time Voice Conversations**: Bidirectional voice communication with AI using GPT-Realtime
-- **Phone Call Support**: Make and receive real phone calls using Azure Communication Services
-- **API-Triggered Calls**: Initiate outbound calls programmatically via REST API
-- **Inbound Call Handling**: Answer and process incoming phone calls
-- **Azure TTS Voices**: Support for Azure neural voices (e.g., `en-US-Ava:DragonHDLatestNeural`)
-- **Barge-in Support**: Users can interrupt the AI while it's speaking
-- **Echo Cancellation**: Built-in audio echo cancellation and noise reduction
-- **Azure Container Apps**: Scalable deployment on Azure
-- **Managed Identity**: Secure authentication without connection strings
+This application demonstrates:
 
-## Security
+- **📞 Outbound Calls**: Enter a phone number in the web UI, and the AI agent calls you
+- **📲 Inbound Calls**: Call the Azure phone number and talk to the AI agent
+- **🎙️ Real-time Voice AI**: Natural conversation with GPT-4o Realtime model via Azure VoiceLive SDK
+- **📝 Live Transcripts**: See the conversation transcribed in real-time in the web UI
+- **🎯 Custom Agent Personas**: Configure different AI agent behaviors (customer service, surveys, etc.)
 
-- **Managed Identity**: All Azure services use managed identity for authentication (no connection strings)
-- **SecurityControl Tag**: All resources are tagged with `SecurityControl:Ignore` for compliance
-
-## Architecture
+### How It Works
 
 ```
 ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
-│                 │      │                 │      │                 │
-│   Next.js UI    │◄────►│  Python API     │◄────►│ Azure VoiceLive │
-│  (Container App)│  WS  │ (FastAPI)       │  WS  │   (GPT-Realtime)│
-│                 │      │                 │      │                 │
-└─────────────────┘      └────────┬────────┘      └─────────────────┘
+│   Web UI        │      │  Python API     │      │ Azure VoiceLive │
+│   (Next.js)     │◄────►│  (FastAPI)      │◄────►│ (GPT-4o Realtime)│
+└─────────────────┘  SSE └────────┬────────┘  WS  └─────────────────┘
                                   │
                     ┌─────────────┼─────────────┐
                     │             │             │
            ┌────────▼────────┐   │   ┌─────────▼─────────┐
-           │                 │   │   │                   │
            │  Azure Storage  │   │   │ Azure Communication│
-           │   (Recordings   │   │   │     Services      │
-           │     & Logs)     │   │   │  (Phone Calls)    │
-           │                 │   │   │                   │
-           └─────────────────┘   │   └─────────────────┘
-                                 │
+           │  (Recordings)   │   │   │     Services       │
+           └─────────────────┘   │   │   (Phone Calls)    │
+                                 │   └───────────────────┘
                     ┌────────────▼────────────┐
-                    │                         │
                     │     PSTN Network        │
                     │   (Real Phone Calls)    │
-                    │                         │
                     └─────────────────────────┘
 ```
+
+1. **You** interact with the web UI to initiate calls or view transcripts
+2. **Azure Communication Services** handles the phone call (PSTN)
+3. **Azure VoiceLive SDK** streams audio to/from GPT-4o Realtime
+4. **Real-time transcripts** flow back to the UI via Server-Sent Events (SSE)
+
+## Features
+
+- **Azure VoiceLive SDK**: Official `azure.ai.voicelive` Python SDK for voice AI
+- **Real-time Streaming**: Bidirectional audio with GPT-4o Realtime model
+- **Phone Calls**: Make and receive real phone calls via Azure Communication Services
+- **Live Transcripts**: Real-time transcription displayed in the web UI
+- **Custom Agendas**: Guide the AI with custom instructions per call
+- **Azure TTS Voices**: High-quality neural voices (e.g., `en-US-Ava:DragonHDLatestNeural`)
+- **Barge-in Support**: Interrupt the AI while it's speaking
+- **Call Recording**: Automatic recording stored in Azure Blob Storage
+- **Managed Identity**: Secure authentication without connection strings
+- **One-Command Deploy**: `azd up` deploys everything to Azure
 
 ## Prerequisites
 
 - [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
 - [Python 3.11+](https://python.org/)
-- [Node.js 20+](https://nodejs.org/) (for UI)
-- Azure subscription with access to Azure AI Services (GPT-Realtime model)
+- [Node.js 20+](https://nodejs.org/)
+- Azure subscription with access to:
+  - Azure AI Services (GPT-4o Realtime model)
+  - Azure Communication Services (for phone calls)
 
 ## Quick Start
 
-### Option 0: One-Command Demo Start (Windows)
-
-```powershell
-# Start API + UI locally (opens browser automatically)
-.\start-demo.ps1
-
-# With dev tunnels for ACS webhooks
-.\start-demo.ps1 -WithTunnels
-```
-
-### Option 1: Deploy Infrastructure Only (for Local Development)
-
-If you want to test locally with Azure backend services:
+### Deploy to Azure
 
 ```bash
-# Initialize environment
-azd init
-
-# Deploy only infrastructure (no containers)
-azd provision
-
-# The post-provision hook will automatically create .env files for local development
-# You can now run locally:
-cd src/api-python && pip install -r requirements.txt && python main.py
-cd src/ui && npm install && npm run dev
-```
-
-### Option 2: Full Deployment
-
-```bash
+# One command deploys everything
 azd up
 ```
 
-This will:
-- Create an Azure Resource Group
-- Deploy Azure AI Services with GPT-Realtime model
-- Create Azure Communication Services for phone calls
-- Create Azure Storage Account for recordings and logs
-- Deploy Container Apps for UI and API
+This creates all required Azure resources:
+- Azure AI Services (GPT-4o Realtime)
+- Azure Communication Services (with phone number)
+- Azure Container Apps (API + UI)
+- Azure Storage (recordings)
 
-### Local Development (Manual Setup)
+After deployment (~10-15 minutes):
+1. **Buy a phone number** in Azure Portal → Communication Services → Phone Numbers
+2. Open the UI URL shown in the deployment output
+3. Enter a phone number and click "Call" - the AI will call you!
+
+### Local Development
 
 ```bash
-# 1. Deploy Azure infrastructure first
+# 1. Deploy Azure infrastructure (creates backend services)
 azd provision
 
-# 2. Start Python API (Terminal 1)
+# 2. Start Python API
 cd src/api-python
 pip install -r requirements.txt
-python -m uvicorn main:app --host 127.0.0.1 --port 8000
+python main.py
 
-# 3. Start UI (Terminal 2)
+# 3. Start UI (in another terminal)
 cd src/ui
 npm install
 npm run dev
 ```
 
-### Accessing Local Services with Azure Dev Tunnels
-
-Since the servers run on localhost, you may need [Azure Dev Tunnels](https://learn.microsoft.com/azure/developer/dev-tunnels/) to access them from your browser or for ACS webhooks.
+For local development with phone calls, you'll need [Azure Dev Tunnels](https://learn.microsoft.com/azure/developer/dev-tunnels/) to expose your local API for ACS webhooks:
 
 ```bash
-# Install dev tunnels (if not already installed)
-winget install Microsoft.devtunnel
-
-# Login (first time only)
-devtunnel login
-
-# Create tunnel for API (Terminal 3)
 devtunnel host --port-numbers 8000 --allow-anonymous
-
-# Create tunnel for UI (Terminal 4)
-devtunnel host --port-numbers 3000 --allow-anonymous
+# Update CALLBACK_URI in src/api-python/.env with the tunnel URL
 ```
 
-The dev tunnel will output public URLs like:
-- API: `https://<tunnel-id>-8000.use2.devtunnels.ms`
-- UI: `https://<tunnel-id>-3000.use2.devtunnels.ms`
+### Windows Demo Script
 
-**Note**: Update `CALLBACK_URI` in `src/api-python/.env` with your API tunnel URL for ACS webhooks to work.
+```powershell
+# Starts API + UI locally, opens browser
+.\start-demo.ps1
+
+# With dev tunnels for phone call webhooks
+.\start-demo.ps1 -WithTunnels
+```
 
 ## Project Structure
 
 ```
 voice-live-agent/
 ├── azure.yaml              # Azure Developer CLI configuration
-├── hooks/                  # Post-deploy scripts
-│   ├── postprovision.ps1   # Windows post-provision script
-│   └── postprovision.sh    # Linux/Mac post-provision script
 ├── infra/                  # Bicep infrastructure templates
-│   ├── main.bicep          # Main deployment template
-│   ├── main.parameters.json
+│   ├── main.bicep
 │   └── modules/
-│       ├── ai-services.bicep
-│       ├── communication-services.bicep
-│       ├── storage.bicep
-│       ├── container-apps-environment.bicep
-│       ├── container-app.bicep
-│       └── role-assignments.bicep
 ├── src/
-│   ├── api-python/         # Python Backend API (FastAPI + VoiceLive SDK)
-│   │   ├── main.py         # FastAPI server with ACS integration
+│   ├── api-python/         # Python Backend (FastAPI + VoiceLive SDK)
+│   │   ├── main.py         # API server with call handling
 │   │   ├── voicelive_agent.py  # VoiceLive SDK wrapper
-│   │   ├── requirements.txt
 │   │   └── Dockerfile
-│   └── ui/                 # Frontend UI (Next.js)
+│   └── ui/                 # Frontend (Next.js)
 │       ├── app/
 │       ├── components/
-│       ├── package.json
 │       └── Dockerfile
 └── README.md
 ```
 
 ## Configuration
 
-### Environment Variables
+### Environment Variables (API)
 
-**API (.env)**
+These are automatically set when deploying with `azd up`:
+
 ```bash
-# Azure VoiceLive Configuration
-AZURE_VOICELIVE_ENDPOINT=https://<your-ai-services>.cognitiveservices.azure.com/
-AZURE_VOICELIVE_MODEL=gpt-realtime
+# Azure VoiceLive (AI)
+AZURE_VOICELIVE_ENDPOINT=https://<ai-services>.cognitiveservices.azure.com/
+AZURE_VOICELIVE_MODEL=gpt-4o-realtime-preview
 AZURE_VOICELIVE_VOICE=en-US-Ava:DragonHDLatestNeural
-AZURE_VOICELIVE_INSTRUCTIONS=You are a helpful AI voice assistant...
 
-# Azure Communication Services Configuration (Managed Identity)
-AZURE_COMMUNICATION_ENDPOINT=https://<acs-resource>.communication.azure.com
-ACS_PHONE_NUMBER=+1234567890
+# Azure Communication Services (Phone)
+AZURE_COMMUNICATION_ENDPOINT=https://<acs>.communication.azure.com
 
-# Server Configuration
-PORT=8000
-CALLBACK_URI=https://<your-public-url>
+# Azure Storage (Recordings)
+AZURE_STORAGE_ACCOUNT_NAME=<storage-account>
+
+# Webhook URL (set automatically by post-provision script)
+CALLBACK_URI=https://<container-app-url>
 ```
 
-**UI (.env)**
-```
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
+**Note**: Phone numbers are automatically discovered from your ACS resource - no manual configuration needed.
 
-## Pricing Estimates
-
-| Service | Estimated Cost |
-|---------|---------------|
-| Azure OpenAI Realtime (audio input) | ~$0.10/min |
-| Azure OpenAI Realtime (audio output) | ~$0.24/min |
-| Azure Blob Storage | ~$0.02/GB/month |
-| Azure Container Apps | Based on vCPU/memory usage |
-
-## API Endpoints
+## API Reference
 
 ### REST Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/health` | GET | Health check |
-| `/api/calls` | GET | List active calls (voice and phone) |
+| `/api/config` | GET | Get configuration (phone number, status) |
+| `/api/calls` | GET | List active calls |
 | `/api/calls/outbound` | POST | Make an outbound phone call |
-| `/api/calls/inbound` | POST | Answer an inbound call |
-| `/api/calls/:callId/hangup` | POST | Hang up a call |
-| `/api/calls/:callId/logs` | GET | Get call logs |
-| `/api/calls/:callId/recording` | GET | Get call recording URL |
-| `/api/calls/events` | POST | ACS Call Automation webhook |
-| `/ws` | WebSocket | Real-time voice communication |
+| `/api/calls/{id}/hangup` | POST | Hang up a call |
+| `/api/calls/{id}/transcripts` | GET | Get call transcripts |
+| `/api/calls/{id}/recording` | GET | Get recording URL |
+| `/api/events/stream` | GET | SSE stream for real-time updates |
 
-### Outbound Call API
-
-Make an outbound phone call (API-triggered):
+### Making an Outbound Call
 
 ```bash
 curl -X POST https://your-api/api/calls/outbound \
   -H "Content-Type: application/json" \
   -d '{
-    "targetPhoneNumber": "+1234567890",
-    "sourcePhoneNumber": "+1987654321"
+    "target_phone_number": "+1234567890",
+    "agenda": "You are a friendly customer service agent. Ask how you can help today."
   }'
 ```
 
-Response:
-```json
-{
-  "success": true,
-  "call": {
-    "callId": "uuid",
-    "connectionId": "connection-id",
-    "startTime": "2024-01-01T00:00:00Z",
-    "status": "connecting",
-    "direction": "outbound",
-    "phoneNumber": "+1234567890"
-  }
-}
+### SSE Events (Real-time Updates)
+
+Connect to `/api/events/stream` to receive real-time updates:
+
+```typescript
+const eventSource = new EventSource('/api/events/stream');
+eventSource.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  // data.type: 'call_created' | 'call_status' | 'transcript' | 'call_removed'
+};
 ```
 
-## WebSocket Messages
+## Pricing Estimates
 
-### Client → Server
-- `{ type: "start_call", direction: "outbound", agenda?: "<instructions>" }` - Start a new call with optional agenda
-- `{ type: "audio", data: "<base64>" }` - Send audio data
-- `{ type: "end_call" }` - End the call
+| Service | Estimated Cost |
+|---------|---------------|
+| Azure OpenAI Realtime (audio) | ~$0.06/min input, ~$0.24/min output |
+| Azure Communication Services | ~$0.013/min (US toll-free) |
+| Azure Container Apps | ~$0.04/vCPU-hour |
+| Azure Storage | ~$0.02/GB/month |
 
-**Agenda Feature**: Pass custom instructions to guide the AI during the call. For example:
-```json
-{
-  "type": "start_call",
-  "direction": "outbound",
-  "agenda": "You are conducting a customer survey. Ask about their experience, get a 1-10 rating, and thank them."
-}
-```
+## Troubleshooting
 
-### Server → Client
-- `{ type: "call_started", callId: "<id>" }` - Call initiated
-- `{ type: "audio", data: "<base64>" }` - Received audio
-- `{ type: "transcript", role: "user"|"assistant", text: "<text>" }` - Transcription
-- `{ type: "call_ended", callId: "<id>" }` - Call ended
-- `{ type: "error", error: {...} }` - Error occurred
+### Calls not connecting
+- Verify you've purchased a phone number in ACS
+- Check that CALLBACK_URI is set correctly (must be HTTPS, publicly accessible)
+- View container logs: `az containerapp logs show -n ca-api-{env} -g rg-{env}`
+
+### No AI voice on call
+- Ensure Azure AI Services has GPT-4o Realtime model deployed
+- Check VoiceLive endpoint is correct
+
+### Transcripts not appearing
+- Open browser dev tools, check for SSE connection to `/api/events/stream`
+- Verify the call status shows "connected"
+
+## Security
+
+- **Managed Identity**: All Azure services authenticate via managed identity (no secrets)
+- **No Connection Strings**: Storage, ACS, and AI Services use DefaultAzureCredential
+- **HTTPS Only**: All endpoints require HTTPS in production
 
 ## License
 

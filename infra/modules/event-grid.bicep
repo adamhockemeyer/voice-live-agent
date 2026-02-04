@@ -24,30 +24,9 @@ resource systemTopic 'Microsoft.EventGrid/systemTopics@2024-06-01-preview' = {
   }
 }
 
-// Event Subscription for Incoming Calls
-resource incomingCallSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2024-06-01-preview' = {
-  parent: systemTopic
-  name: 'incoming-call-subscription'
-  properties: {
-    destination: {
-      endpointType: 'WebHook'
-      properties: {
-        endpointUrl: webhookEndpoint
-      }
-    }
-    filter: {
-      includedEventTypes: [
-        'Microsoft.Communication.IncomingCall'
-      ]
-    }
-    eventDeliverySchema: 'EventGridSchema'
-    retryPolicy: {
-      maxDeliveryAttempts: 30
-      eventTimeToLiveInMinutes: 1440
-    }
-  }
-}
+// Note: Event subscription is created in postprovision hook to ensure webhook endpoint is ready
+// This avoids validation failures during initial deployment when the API might not be responding yet
 
 output systemTopicId string = systemTopic.id
 output systemTopicName string = systemTopic.name
-output subscriptionId string = incomingCallSubscription.id
+output webhookEndpoint string = webhookEndpoint

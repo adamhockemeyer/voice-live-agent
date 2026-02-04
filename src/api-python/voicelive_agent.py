@@ -262,6 +262,8 @@ class VoiceLiveAgent:
     - Direct WebSocket connections from web clients
     """
 
+    AUDIO_OUTPUT_READY_TIMEOUT_SECONDS = 5.0
+
     def __init__(
         self,
         endpoint: str,
@@ -292,10 +294,12 @@ class VoiceLiveAgent:
         self._barge_in_callback = None  # Callback to trigger StopAudio on phone
         self._warm_connection: Optional[WarmConnection] = None
         self._user_speaking = False  # Flag to suppress audio output during barge-in
+        self._audio_output_ready_event = asyncio.Event()
 
     def set_audio_output_callback(self, callback):
         """Set callback for audio output from the agent."""
         self._audio_output_callback = callback
+        self._audio_output_ready_event.set()
 
     def set_transcript_callback(self, callback):
         """Set callback for transcripts."""
@@ -599,12 +603,27 @@ class VoiceLiveAgent:
             except Exception as e:
                 logger.error(f"[{self.call_id}] Failed to send to websocket: {e}")
 
+    async def _wait_for_output_ready(self) -> None:
+        """Wait for an output channel to be ready before triggering initial greeting."""
+        timeout_seconds = self.AUDIO_OUTPUT_READY_TIMEOUT_SECONDS
+
+        # Only wait for websocket clients (not phone calls)
+        # Phone calls rely on the delay in main.py before agent.start()
+        if self.websocket:
+            start_time = time.time()
+            while not self.websocket_ready:
+                if time.time() - start_time > timeout_seconds:
+                    logger.warning(f"[{self.call_id}] WebSocket not ready after {timeout_seconds}s; proceeding")
+                    return
+                await asyncio.sleep(0.05)
+
     async def _trigger_initial_greeting(self):
         """Trigger the AI to start the conversation with a greeting."""
         if not self.connection:
             return
         
         try:
+            await self._wait_for_output_ready()
             logger.info(f"[{self.call_id}] Triggering initial greeting")
             # Create a response to prompt the AI to speak first
             await self.connection.response.create()

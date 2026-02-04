@@ -54,6 +54,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Unique instance ID to detect container restarts/multiple instances
+import uuid
+INSTANCE_ID = str(uuid.uuid4())[:8]
+REQUEST_COUNTER = 0
+logger.info(f"Server instance started: {INSTANCE_ID}")
+
 
 # Configuration
 class Config:
@@ -76,11 +82,22 @@ active_calls: Dict[str, Dict[str, Any]] = {}
 active_agents: Dict[str, VoiceLiveAgent] = {}
 active_media_websockets: Dict[str, WebSocket] = {}  # Store media websockets for sending audio back
 call_transcripts: Dict[str, list] = {}  # Store transcripts per call
-transcript_subscribers: Dict[str, list] = {}  # SSE subscribers per call
+transcript_subscribers: Dict[str, list] = {}  # SSE subscribers per call (legacy)
 call_recordings: Dict[str, Dict[str, Any]] = {}  # Store recording metadata per call
+
+# Global event subscribers for real-time UI updates
+ui_event_subscribers: List[asyncio.Queue] = []
 
 # Current inbound agent instructions (can be updated via API)
 inbound_agent_instructions: str = Config.VOICELIVE_INSTRUCTIONS
+
+# Cleanup tasks tracking - to avoid duplicate cleanup
+cleanup_tasks: Dict[str, asyncio.Task] = {}
+call_start_times: Dict[str, datetime] = {}  # Track when each call was created
+CALL_TIMEOUT_SECONDS = 120  # Max time a call can stay "connecting" before auto-cleanup
+CALL_CLEANUP_CHECK_INTERVAL = 10  # Check for timed-out calls every 10 seconds
+CALL_CLEANUP_DELAY_SECONDS = 30  # Keep call in "ended" state for 30s before removal
+CALL_ENDED_CLEANUP_DELAY = 10  # Wait 10s after disconnect before cleanup
 
 # Storage client for recordings
 blob_service_client: Optional[BlobServiceClient] = None
@@ -89,6 +106,47 @@ blob_service_client: Optional[BlobServiceClient] = None
 cached_phone_numbers: List[str] = []
 phone_numbers_last_fetched: Optional[datetime] = None
 PHONE_CACHE_TTL_SECONDS = 300  # Cache for 5 minutes
+
+
+def log_call_event(call_id: str, event: str, details: dict = None):
+    """Structured logging for call lifecycle events - helps debug UI/backend sync issues."""
+    log_data = {
+        "call_id": call_id[:8] if call_id else "unknown",
+        "event": event,
+        "timestamp": datetime.now().isoformat(),
+        **(details or {})
+    }
+    logger.info(f"CALL_EVENT: {json.dumps(log_data)}")
+
+
+async def broadcast_ui_event(event: dict):
+    """Broadcast an event to all connected UI clients via SSE."""
+    dead_subscribers = []
+    for queue in ui_event_subscribers:
+        try:
+            await queue.put(event)
+        except Exception:
+            dead_subscribers.append(queue)
+    
+    # Clean up dead subscribers
+    for queue in dead_subscribers:
+        if queue in ui_event_subscribers:
+            ui_event_subscribers.remove(queue)
+    
+    if ui_event_subscribers:
+        logger.debug(f"Broadcast UI event to {len(ui_event_subscribers)} subscribers: {event.get('type')}")
+
+
+def get_call_summary(call_id: str) -> dict:
+    """Get a summary of a call for broadcasting to UI."""
+    info = active_calls.get(call_id, {})
+    return {
+        "call_id": call_id,
+        "status": info.get("status"),
+        "direction": info.get("direction"),
+        "phone_number": info.get("phone_number"),
+        "start_time": info.get("start_time"),
+    }
 
 
 async def get_acs_phone_numbers() -> List[str]:
@@ -200,10 +258,15 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.warning(f"Failed to initialize connection pool: {e}")
     
+    # Start background task to check for timed-out calls
+    timeout_checker_task = asyncio.create_task(check_call_timeouts())
+    logger.info("Call timeout checker started")
+    
     yield
     
     # Cleanup on shutdown
     logger.info("Shutting down - cleaning up active calls")
+    timeout_checker_task.cancel()
     for call_id, agent in list(active_agents.items()):
         try:
             await agent.stop()
@@ -263,6 +326,217 @@ async def get_config():
     }
 
 
+@app.get("/api/debug/state")
+async def get_debug_state():
+    """Debug endpoint showing all internal state - helps diagnose UI/backend sync issues."""
+    global REQUEST_COUNTER
+    REQUEST_COUNTER += 1
+    
+    from voicelive_agent import get_connection_pool
+    pool = get_connection_pool()
+    
+    return {
+        "instance_id": INSTANCE_ID,
+        "request_count": REQUEST_COUNTER,
+        "timestamp": datetime.now().isoformat(),
+        "active_calls_count": len(active_calls),
+        "active_calls": {
+            call_id: {
+                **{k: v for k, v in info.items() if k != "agenda"},  # Exclude agenda for brevity
+                "has_agent": call_id in active_agents,
+                "has_media_ws": call_id in active_media_websockets,
+                "has_transcripts": call_id in call_transcripts,
+                "transcript_count": len(call_transcripts.get(call_id, [])),
+            }
+            for call_id, info in active_calls.items()
+        },
+        "orphaned_agents": [k for k in active_agents.keys() if k not in active_calls],
+        "orphaned_websockets": [k for k in active_media_websockets.keys() if k not in active_calls],
+        "pending_cleanups": list(cleanup_tasks.keys()),
+        "transcript_call_ids": list(call_transcripts.keys()),
+        "connection_pool": pool.pool_status() if pool else None,
+        "ui_subscribers": len(ui_event_subscribers),
+    }
+
+
+@app.get("/api/events/stream")
+async def ui_event_stream():
+    """SSE endpoint for real-time UI updates - call status, transcripts, etc."""
+    
+    async def event_generator():
+        queue = asyncio.Queue()
+        ui_event_subscribers.append(queue)
+        logger.info(f"UI client connected to event stream (total: {len(ui_event_subscribers)})")
+        
+        try:
+            # Send current state on connect
+            for call_id, info in active_calls.items():
+                initial_event = {
+                    "type": "call_status",
+                    "call": get_call_summary(call_id),
+                }
+                yield f"data: {json.dumps(initial_event)}\n\n"
+            
+            # Stream events as they happen
+            while True:
+                try:
+                    event = await asyncio.wait_for(queue.get(), timeout=30.0)
+                    yield f"data: {json.dumps(event)}\n\n"
+                except asyncio.TimeoutError:
+                    # Send keepalive to prevent connection timeout
+                    yield ": keepalive\n\n"
+        finally:
+            if queue in ui_event_subscribers:
+                ui_event_subscribers.remove(queue)
+            logger.info(f"UI client disconnected from event stream (remaining: {len(ui_event_subscribers)})")
+    
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        }
+    )
+
+
+async def cleanup_call_after_delay(call_id: str, delay: int = 2, reason: str = "unknown"):
+    """Remove call from active_calls after a delay to allow UI to stabilize.
+    
+    Args:
+        call_id: The call ID to clean up
+        delay: Delay in seconds before cleanup
+        reason: Reason for cleanup (for logging)
+    """
+    await asyncio.sleep(delay)
+    if call_id in active_calls:
+        log_call_event(call_id, "CLEANUP_EXECUTING", {"reason": reason, "delay": delay})
+        
+        # Clean up agent first
+        if call_id in active_agents:
+            agent = active_agents[call_id]
+            try:
+                await agent.stop()
+            except Exception as e:
+                logger.warning(f"Error stopping agent during cleanup {call_id}: {e}")
+            del active_agents[call_id]
+        
+        # Clean up media websocket
+        if call_id in active_media_websockets:
+            try:
+                ws = active_media_websockets[call_id]
+                await ws.close()
+            except Exception as e:
+                logger.debug(f"Error closing media websocket during cleanup {call_id}: {e}")
+            del active_media_websockets[call_id]
+        
+        # Remove from call tracking
+        del active_calls[call_id]
+        
+        # Broadcast call_removed to UI
+        await broadcast_ui_event({
+            "type": "call_removed",
+            "callId": call_id,
+        })
+        
+        # Clean up call start time
+        if call_id in call_start_times:
+            del call_start_times[call_id]
+        
+        # Clean up subscribers but KEEP transcripts for UI to retrieve after call ends
+        if call_id in transcript_subscribers:
+            del transcript_subscribers[call_id]
+        # Note: call_transcripts[call_id] is intentionally kept for post-call review
+    
+    # Remove task reference
+    if call_id in cleanup_tasks:
+        del cleanup_tasks[call_id]
+
+
+def schedule_cleanup(call_id: str, delay: int = 2, reason: str = "unknown"):
+    """Schedule cleanup with deduplication - cancels any existing cleanup for this call."""
+    # Cancel existing cleanup if one is scheduled
+    if call_id in cleanup_tasks:
+        cleanup_tasks[call_id].cancel()
+        log_call_event(call_id, "CLEANUP_CANCELLED", {"reason": "new_cleanup_scheduled"})
+    
+    # Schedule new cleanup
+    task = asyncio.create_task(cleanup_call_after_delay(call_id, delay=delay, reason=reason))
+    cleanup_tasks[call_id] = task
+    log_call_event(call_id, "CLEANUP_SCHEDULED", {"delay": delay, "reason": reason})
+
+
+def select_call_id_for_media_stream() -> Optional[str]:
+    """Select the most likely call_id to associate with a new media WebSocket."""
+    connected_candidates = [
+        call_id
+        for call_id, info in active_calls.items()
+        if info.get("status") == "connected" and call_id not in active_media_websockets
+    ]
+    if connected_candidates:
+        return connected_candidates[-1]
+
+    connecting_candidates = [
+        call_id
+        for call_id, info in active_calls.items()
+        if info.get("status") == "connecting" and call_id not in active_media_websockets
+    ]
+    if connecting_candidates:
+        return connecting_candidates[-1]
+
+    fallback_candidates = [
+        call_id
+        for call_id in active_calls.keys()
+        if call_id not in active_media_websockets
+    ]
+    if fallback_candidates:
+        return fallback_candidates[-1]
+
+    return None
+
+
+async def check_call_timeouts():
+    """Periodically check for calls stuck in 'connecting' state and clean them up."""
+    while True:
+        try:
+            await asyncio.sleep(CALL_CLEANUP_CHECK_INTERVAL)
+            now = datetime.now()
+            timed_out_calls = []
+            
+            for call_id, start_time in list(call_start_times.items()):
+                if call_id in active_calls:
+                    call_info = active_calls[call_id]
+                    elapsed = (now - start_time).total_seconds()
+                    
+                    # Timeout if call is "connecting" and too old
+                    if call_info.get("status") == "connecting" and elapsed > CALL_TIMEOUT_SECONDS:
+                        log_call_event(call_id, "TIMEOUT", {"status": "connecting", "elapsed_seconds": elapsed})
+                        timed_out_calls.append(call_id)
+            
+            # Clean up timed-out calls
+            for call_id in timed_out_calls:
+                try:
+                    # Try to hang up the call gracefully
+                    credential = DefaultAzureCredential()
+                    call_client = CallAutomationClient(Config.ACS_ENDPOINT, credential)
+                    call_connection = call_client.get_call_connection(call_id)
+                    await call_connection.hang_up(is_for_everyone=True)
+                except Exception as e:
+                    logger.warning(f"Failed to hang up timed-out call {call_id}: {e}")
+                finally:
+                    # Mark as ended and schedule cleanup
+                    if call_id in active_calls:
+                        active_calls[call_id]["status"] = "ended"
+                        active_calls[call_id]["ended_at"] = datetime.now().isoformat()
+                        schedule_cleanup(call_id, delay=CALL_ENDED_CLEANUP_DELAY, reason="call_timeout")
+                    if call_id in call_start_times:
+                        del call_start_times[call_id]
+        
+        except Exception as e:
+            logger.error(f"Error in check_call_timeouts: {e}")
+
+
 @app.get("/api/inbound-agent")
 async def get_inbound_agent():
     """Get current inbound agent instructions."""
@@ -281,17 +555,26 @@ async def set_inbound_agent(request: InboundAgentRequest):
 @app.get("/api/calls")
 async def get_active_calls():
     """List all active calls."""
+    global REQUEST_COUNTER
+    REQUEST_COUNTER += 1
+    
+    calls_list = [
+        {
+            "call_id": call_id,
+            "status": info.get("status"),
+            "direction": info.get("direction"),
+            "phone_number": info.get("phone_number"),
+            "start_time": info.get("start_time"),
+        }
+        for call_id, info in active_calls.items()
+    ]
+    
+    # Log every request to diagnose inconsistent responses
+    logger.debug(f"GET /api/calls [instance={INSTANCE_ID}] returning {len(calls_list)} calls: {[c['call_id'][:8] for c in calls_list]}")
+    
     return {
-        "calls": [
-            {
-                "call_id": call_id,
-                "status": info.get("status"),
-                "direction": info.get("direction"),
-                "phone_number": info.get("phone_number"),
-                "start_time": info.get("start_time"),
-            }
-            for call_id, info in active_calls.items()
-        ]
+        "instance_id": INSTANCE_ID,
+        "calls": calls_list
     }
 
 
@@ -318,6 +601,9 @@ async def make_outbound_call(request: OutboundCallRequest):
         caller_id = PhoneNumberIdentifier(source_number)
 
         call_invite = CallInvite(target=target, source_caller_id_number=caller_id)
+        logger.info(
+            f"Creating outbound call: source={source_number}, target={request.target_phone_number}, callback={Config.CALLBACK_URI}/api/calls/events"
+        )
 
         # Configure bidirectional media streaming for two-way audio
         media_streaming = MediaStreamingOptions(
@@ -341,17 +627,27 @@ async def make_outbound_call(request: OutboundCallRequest):
         call_connection_id = result.call_connection_id
         call_id = call_connection_id
 
+        logger.info(f"Outbound call created: call_connection_id={call_connection_id}")
+
         # Store call info (including agenda for when the agent starts)
+        now = datetime.now()
         active_calls[call_id] = {
             "call_connection_id": call_connection_id,
             "status": "connecting",
             "direction": "outbound",
             "phone_number": request.target_phone_number,
-            "start_time": datetime.now().isoformat(),
+            "start_time": now.isoformat(),
             "agenda": request.agenda,
         }
+        call_start_times[call_id] = now
 
         logger.info(f"Outbound call initiated: {call_id} to {request.target_phone_number}")
+        
+        # Broadcast call_created to UI
+        await broadcast_ui_event({
+            "type": "call_created",
+            "call": get_call_summary(call_id),
+        })
 
         return CallResponse(success=True, call_id=call_id)
 
@@ -366,19 +662,33 @@ async def handle_inbound_call(request: Request):
     Handle incoming call notification from ACS Event Grid.
     """
     try:
+        logger.info("*** WEBHOOK RECEIVED: Inbound call handler called ***")
         body = await request.json()
-        logger.info(f"Inbound call event: {body}")
+        logger.info(f"Inbound call event body: {body}")
 
         # Event Grid sends events as an array
         if not isinstance(body, list):
             body = [body]
 
-        # Handle Event Grid validation
+        # Handle Event Grid validation (Event Grid schema or CloudEvents schema)
         if len(body) > 0:
             event = body[0]
+            # Prefer header-based detection when present
+            aeg_event_type = request.headers.get("aeg-event-type")
+            if aeg_event_type == "SubscriptionValidation":
+                validation_code = event.get("data", {}).get("validationCode")
+                if validation_code:
+                    return JSONResponse({"validationResponse": validation_code})
+            # Event Grid schema
             if event.get("eventType") == "Microsoft.EventGrid.SubscriptionValidationEvent":
-                validation_code = event["data"]["validationCode"]
-                return JSONResponse({"validationResponse": validation_code})
+                validation_code = event.get("data", {}).get("validationCode")
+                if validation_code:
+                    return JSONResponse({"validationResponse": validation_code})
+            # CloudEvents schema
+            if event.get("type") == "Microsoft.EventGrid.SubscriptionValidationEvent":
+                validation_code = event.get("data", {}).get("validationCode")
+                if validation_code:
+                    return JSONResponse({"validationResponse": validation_code})
 
         # Extract the incoming call event data
         if len(body) == 0:
@@ -428,6 +738,12 @@ async def handle_inbound_call(request: Request):
         }
 
         logger.info(f"Answered inbound call: {call_id}")
+        
+        # Broadcast call_created to UI
+        await broadcast_ui_event({
+            "type": "call_created",
+            "call": get_call_summary(call_id),
+        })
 
         return CallResponse(success=True, call_id=call_id)
 
@@ -450,12 +766,20 @@ async def handle_call_events(request: Request):
             event_type = event.get("type", "")
             call_connection_id = event.get("data", {}).get("callConnectionId", "")
 
-            logger.info(f"Call event: {event_type} for {call_connection_id}")
+            log_call_event(call_connection_id, "ACS_EVENT", {"type": event_type})
 
             if event_type == "Microsoft.Communication.CallConnected":
                 if call_connection_id in active_calls:
+                    old_status = active_calls[call_connection_id].get("status")
                     active_calls[call_connection_id]["status"] = "connected"
-                    logger.info(f"Call connected: {call_connection_id}")
+                    active_calls[call_connection_id]["connected_at"] = datetime.now().isoformat()
+                    log_call_event(call_connection_id, "STATUS_CHANGE", {"from": old_status, "to": "connected"})
+                    
+                    # Broadcast status change to UI
+                    await broadcast_ui_event({
+                        "type": "call_status",
+                        "call": get_call_summary(call_connection_id),
+                    })
                     
                     # Start call recording
                     try:
@@ -469,30 +793,50 @@ async def handle_call_events(request: Request):
                         call_client = CallAutomationClient(Config.ACS_ENDPOINT, credential)
                         call_connection = call_client.get_call_connection(call_connection_id)
                         await call_connection.start_media_streaming()
-                        logger.info(f"Started media streaming for {call_connection_id}")
+                        log_call_event(call_connection_id, "MEDIA_STREAMING_STARTED", {})
                     except Exception as e:
+                        log_call_event(call_connection_id, "MEDIA_STREAMING_FAILED", {"error": str(e)})
                         logger.exception(f"Failed to start media streaming: {e}")
                     
                     # Start VoiceLive agent for this call
+                    # Wait for media streaming to be ready before starting agent
+                    await asyncio.sleep(0.5)  # Give media streaming 500ms to establish
                     await start_voicelive_agent(call_connection_id)
 
             elif event_type == "Microsoft.Communication.CallDisconnected":
+                log_call_event(call_connection_id, "DISCONNECT_EVENT_RECEIVED", {
+                    "in_active_calls": call_connection_id in active_calls,
+                    "active_calls_count": len(active_calls)
+                })
                 if call_connection_id in active_calls:
-                    active_calls[call_connection_id]["status"] = "disconnected"
+                    old_status = active_calls[call_connection_id].get("status")
+                    active_calls[call_connection_id]["status"] = "ended"
+                    active_calls[call_connection_id]["ended_at"] = datetime.now().isoformat()
+                    log_call_event(call_connection_id, "STATUS_CHANGE", {"from": old_status, "to": "ended"})
+                    
+                    # Broadcast status change to UI
+                    await broadcast_ui_event({
+                        "type": "call_status",
+                        "call": get_call_summary(call_connection_id),
+                    })
+                    
                     # Stop call recording
                     try:
                         await stop_call_recording(call_connection_id)
                     except Exception as e:
                         logger.warning(f"Failed to stop call recording: {e}")
+                    
                     # Stop VoiceLive agent
                     await stop_voicelive_agent(call_connection_id)
-                    del active_calls[call_connection_id]
+                    
+                    # Schedule cleanup with longer delay to allow UI to detect status change
+                    schedule_cleanup(call_connection_id, delay=CALL_ENDED_CLEANUP_DELAY, reason="call_disconnected_event")
 
             elif event_type == "Microsoft.Communication.PlayCompleted":
-                logger.info(f"Play completed for {call_connection_id}")
+                log_call_event(call_connection_id, "PLAY_COMPLETED", {})
 
             elif event_type == "Microsoft.Communication.PlayFailed":
-                logger.error(f"Play failed for {call_connection_id}: {event}")
+                log_call_event(call_connection_id, "PLAY_FAILED", {"event": str(event)})
 
         return {"status": "ok"}
 
@@ -507,24 +851,46 @@ async def hangup_call(call_id: str):
     if call_id not in active_calls:
         raise HTTPException(status_code=404, detail="Call not found")
 
+    log_call_event(call_id, "HANGUP_REQUESTED", {})
+    error_occurred = False
+    
     try:
         credential = DefaultAzureCredential()
         call_client = CallAutomationClient(Config.ACS_ENDPOINT, credential)
-
         call_connection = call_client.get_call_connection(call_id)
         await call_connection.hang_up(is_for_everyone=True)
-
-        await stop_voicelive_agent(call_id)
-
-        if call_id in active_calls:
-            del active_calls[call_id]
-
-        logger.info(f"Hung up call: {call_id}")
-        return CallResponse(success=True, call_id=call_id, message="Call ended")
-
+        log_call_event(call_id, "ACS_HANGUP_SUCCESS", {})
     except Exception as e:
+        log_call_event(call_id, "ACS_HANGUP_FAILED", {"error": str(e)})
         logger.exception(f"Failed to hang up call {call_id}")
-        raise HTTPException(status_code=500, detail=str(e))
+        error_occurred = True
+
+    # Always try to clean up resources, even if hang_up failed
+    try:
+        await stop_voicelive_agent(call_id)
+    except Exception as e:
+        logger.warning(f"Failed to stop agent: {e}")
+    
+    try:
+        await stop_call_recording(call_id)
+    except Exception as e:
+        logger.warning(f"Failed to stop call recording: {e}")
+
+    # Mark as ended and schedule cleanup with longer delay for UI to see
+    if call_id in active_calls:
+        old_status = active_calls[call_id].get("status")
+        active_calls[call_id]["status"] = "ended"
+        active_calls[call_id]["ended_at"] = datetime.now().isoformat()
+        log_call_event(call_id, "STATUS_CHANGE", {"from": old_status, "to": "ended", "trigger": "user_hangup"})
+        schedule_cleanup(call_id, delay=CALL_ENDED_CLEANUP_DELAY, reason="user_hangup")
+    
+    # Clean up call start time tracking
+    if call_id in call_start_times:
+        del call_start_times[call_id]
+
+    if error_occurred:
+        return CallResponse(success=True, call_id=call_id, message="Call ended (with errors)")
+    return CallResponse(success=True, call_id=call_id, message="Call ended")
 
 
 async def broadcast_transcript(call_id: str, role: str, text: str, partial: bool = False):
@@ -541,7 +907,7 @@ async def broadcast_transcript(call_id: str, role: str, text: str, partial: bool
     if not partial:
         call_transcripts[call_id].append(transcript_entry)
     
-    # Broadcast to all subscribers
+    # Broadcast to legacy per-call subscribers (for backwards compat)
     subscribers = transcript_subscribers.get(call_id, [])
     dead_subscribers = []
     for queue in subscribers:
@@ -554,6 +920,15 @@ async def broadcast_transcript(call_id: str, role: str, text: str, partial: bool
     for queue in dead_subscribers:
         if queue in transcript_subscribers.get(call_id, []):
             transcript_subscribers[call_id].remove(queue)
+    
+    # Also broadcast to global UI event stream
+    await broadcast_ui_event({
+        "type": "transcript",
+        "callId": call_id,
+        "role": role,
+        "text": text,
+        "partial": partial,
+    })
 
 
 @app.get("/api/calls/{call_id}/transcripts")
@@ -698,10 +1073,12 @@ async def stream_transcripts(call_id: str):
 async def start_voicelive_agent(call_id: str):
     """Start a VoiceLive agent for a call."""
     if call_id in active_agents:
-        logger.warning(f"Agent already exists for call {call_id}")
+        log_call_event(call_id, "AGENT_ALREADY_EXISTS", {})
         return
 
     try:
+        log_call_event(call_id, "AGENT_STARTING", {})
+        
         # Get agenda from stored call info
         call_info = active_calls.get(call_id, {})
         direction = call_info.get("direction", "inbound")
@@ -712,8 +1089,6 @@ async def start_voicelive_agent(call_id: str):
             agenda = call_info.get("agenda") or Config.VOICELIVE_INSTRUCTIONS
         else:
             agenda = inbound_agent_instructions
-        
-        logger.info(f"Using agenda for {direction} call {call_id}: {agenda[:100]}...")
 
         # Initialize transcript storage for this call
         call_transcripts[call_id] = []
@@ -735,11 +1110,21 @@ async def start_voicelive_agent(call_id: str):
             await broadcast_transcript(current_call_id, role, text, partial)
         agent.set_transcript_callback(transcript_callback)
 
-        # Start agent in background
-        asyncio.create_task(agent.start())
-        logger.info(f"Started VoiceLive agent for call {call_id}")
+        # Start agent in background with error handling
+        async def run_agent_with_error_handling():
+            try:
+                log_call_event(call_id, "AGENT_TASK_STARTING", {})
+                await agent.start()
+                log_call_event(call_id, "AGENT_TASK_COMPLETED", {})
+            except Exception as e:
+                log_call_event(call_id, "AGENT_TASK_FAILED", {"error": str(e)})
+                logger.exception(f"Agent task failed for call {call_id}: {e}")
+        
+        asyncio.create_task(run_agent_with_error_handling())
+        log_call_event(call_id, "AGENT_STARTED", {"direction": direction})
 
     except Exception as e:
+        log_call_event(call_id, "AGENT_START_FAILED", {"error": str(e)})
         logger.exception(f"Failed to start VoiceLive agent for {call_id}")
 
 
@@ -749,6 +1134,7 @@ async def stop_voicelive_agent(call_id: str):
         return
 
     try:
+        log_call_event(call_id, "AGENT_STOPPING", {})
         agent = active_agents[call_id]
         await agent.stop()
         del active_agents[call_id]
@@ -757,9 +1143,10 @@ async def stop_voicelive_agent(call_id: str):
         if call_id in transcript_subscribers:
             del transcript_subscribers[call_id]
         
-        logger.info(f"Stopped VoiceLive agent for call {call_id}")
+        log_call_event(call_id, "AGENT_STOPPED", {})
 
     except Exception as e:
+        log_call_event(call_id, "AGENT_STOP_FAILED", {"error": str(e)})
         logger.exception(f"Failed to stop VoiceLive agent for {call_id}")
 
 
@@ -824,7 +1211,7 @@ async def media_websocket(websocket: WebSocket):
     ACS connects here and sends call info in the messages.
     """
     await websocket.accept()
-    logger.info("Media WebSocket connected (waiting for metadata)")
+    log_call_event("unknown", "MEDIA_WS_CONNECTED", {"endpoint": "/ws/media"})
     
     call_id = None
     agent = None
@@ -835,35 +1222,34 @@ async def media_websocket(websocket: WebSocket):
             
             # First message should be metadata with call info
             if kind == "AudioMetadata":
-                # Log full message to debug structure
-                logger.info(f"AudioMetadata message: {message}")
-                
-                # ACS doesn't send callConnectionId in metadata - we need to match by timing
-                # Since we only have one active call typically, use the most recent one
                 metadata = message.get("audioMetadata", {})
                 subscription_id = metadata.get("subscriptionId")
                 
-                # Find the active call (there should be one that just started)
-                if active_calls:
-                    # Get the most recently added call
-                    call_id = list(active_calls.keys())[-1] if active_calls else None
-                    logger.info(f"Using active call_id: {call_id}, subscription: {subscription_id}")
+                # Find the best active call to associate with this media stream
+                call_id = select_call_id_for_media_stream()
+                log_call_event(call_id or "unknown", "MEDIA_WS_METADATA", {
+                    "subscription_id": subscription_id,
+                    "selected_call_id": call_id,
+                    "active_calls": list(active_calls.keys()),
+                })
                 
                 if call_id:
                     # Store websocket for sending audio back
                     active_media_websockets[call_id] = websocket
                     
-                    # Wait a moment for agent to be ready
-                    for _ in range(10):
+                    # Wait for agent to be ready (increased from 5s to 15s)
+                    agent_wait_iterations = 30  # 30 * 0.5s = 15s max wait
+                    for i in range(agent_wait_iterations):
                         agent = active_agents.get(call_id)
                         if agent:
                             break
+                        if i % 10 == 0 and i > 0:
+                            log_call_event(call_id, "WAITING_FOR_AGENT", {"iteration": i, "max": agent_wait_iterations})
                         await asyncio.sleep(0.5)
                     
                     if agent:
-                        logger.info(f"Agent found for call {call_id}, setting up audio callback")
+                        log_call_event(call_id, "AGENT_FOUND", {"wait_iterations": i + 1})
                         # Set callback to send audio back to phone
-                        # Capture call_id in closure properly
                         current_call_id = call_id
                         async def audio_callback(audio_data: bytes):
                             await send_audio_to_phone(current_call_id, audio_data)
@@ -874,7 +1260,9 @@ async def media_websocket(websocket: WebSocket):
                             await stop_audio_on_phone(current_call_id)
                         agent.set_barge_in_callback(barge_in_callback)
                     else:
-                        logger.warning(f"No agent found for call {call_id}")
+                        log_call_event(call_id, "AGENT_NOT_FOUND", {"waited_seconds": agent_wait_iterations * 0.5})
+                else:
+                    log_call_event("unknown", "NO_CALL_FOR_MEDIA_WS", {"active_calls": list(active_calls.keys())})
             
             elif kind == "AudioData" and agent:
                 # Audio from the phone call - send to VoiceLive
@@ -883,8 +1271,9 @@ async def media_websocket(websocket: WebSocket):
                     await agent.send_audio(audio_data)
                     
     except WebSocketDisconnect:
-        logger.info(f"Media WebSocket disconnected for call {call_id}")
+        log_call_event(call_id or "unknown", "MEDIA_WS_DISCONNECTED", {})
     except Exception as e:
+        log_call_event(call_id or "unknown", "MEDIA_WS_ERROR", {"error": str(e)})
         logger.exception(f"Error in media WebSocket: {e}")
     finally:
         if call_id and call_id in active_media_websockets:
